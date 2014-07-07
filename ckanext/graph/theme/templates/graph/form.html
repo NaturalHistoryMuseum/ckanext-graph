@@ -1,0 +1,21 @@
+{% import 'macros/form.html' as form %}
+
+<fieldset>
+
+    <legend>Graph types</legend>
+
+    {% call form.checkbox('temporal', label=_('Temporal count'), value=1, checked=data.temporal, error=errors.temporal, attrs={'data-toggle': "collapse", 'data-target':"#temporal-options"}) %}
+      {{ form.info(_('Plot dataset growth over time.')) }}
+    {% endcall %}
+
+    <div id="temporal-options" class="collapse {% if data.temporal %} in {% endif %}">
+        {% call form.select('date_field', label=_('Date field'), options=datastore_field_options, selected=data.date_field, error=errors.date_field, is_required=true) %}
+          {{ form.info(_('Date field to use when plotting temporal dataset.'), inline=True) }}
+        {% endcall %}
+
+        {% call form.select('date_interval', label=_('Date interval'), options=date_interval_options, selected=data.date_interval, error=errors.date_interval, is_required=true) %}
+          {{ form.info(_('Date interval to segment data by.'), inline=True) }}
+        {% endcall %}
+    </div>
+
+</fieldset>
