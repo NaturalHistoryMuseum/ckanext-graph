@@ -10,6 +10,7 @@ import dateutil.parser
 from ckanext.datastore.interfaces import IDatastore
 from ckanext.graph.logic.validators import is_boolean, in_list
 from pylons import config
+from ckan.common import json, request, _, response
 get_action = logic.get_action
 
 
@@ -50,6 +51,7 @@ class GraphPlugin(p.SingletonPlugin):
             },
             'icon': 'bar-chart',
             'iframed': False,
+            'filterable': True,
             'preview_enabled': False,
             'full_page_edit': False
         }
@@ -62,7 +64,7 @@ class GraphPlugin(p.SingletonPlugin):
         print 'SEARCH'
         return query_dict
 
-    def datastore_validate_query(self, context, data_dict, all_field_ids):
+    def datastore_validate(self, context, data_dict, all_field_ids):
         return data_dict
 
     def view_template(self, context, data_dict):
@@ -93,11 +95,32 @@ class GraphPlugin(p.SingletonPlugin):
 
             date_interval = data_dict['resource_view'].get('date_interval')
 
+            # Add filters from request
+
+            where = []
+
+            filter_str = request.params.get('filters')
+
+            if filter_str:
+                for f in filter_str.split('|'):
+                    try:
+                        (field, value) = f.split(':')
+                        where.append('"{field}" = \'{value}\''.format(field=field, value=value))
+
+                    except ValueError:
+                        pass
+
+            # TODO: Full text
+
+            where = 'WHERE %s' % ' AND '.join(where) if where else ''
+
             data_dict = {
-                'sql': 'SELECT date_trunc(\'{date_interval}\', "{date_field}"::date) AS date, COUNT(*) AS count FROM "{resource_id}" GROUP BY 1 ORDER BY 1'.format(
+                'sql': 'SELECT date_trunc(\'{date_interval}\', "{date_field}"::date) AS date, COUNT(*) AS count FROM "{resource_id}" {where} GROUP BY 1 ORDER BY 1'.format(
                     date_interval=date_interval,
                     date_field=data_dict['resource_view'].get('date_field'),
-                    resource_id=data_dict['resource']['id'])
+                    resource_id=data_dict['resource']['id'],
+                    where=where
+                    )
                 }
 
             try:
