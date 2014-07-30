@@ -43,7 +43,7 @@ class GraphPlugin(p.SingletonPlugin):
         """Return generic info about the plugin"""
         return {
             'name': 'graph',
-            'title': 'Graph 2',
+            'title': 'Graph',
             'schema': {
                 'temporal': [is_boolean],
                 'date_field': [not_empty, in_list(self.list_datastore_fields())],
@@ -110,7 +110,10 @@ class GraphPlugin(p.SingletonPlugin):
                     except ValueError:
                         pass
 
-            # TODO: Full text
+            # Full text filter
+            fulltext = request.params.get('q')
+            if fulltext:
+                where.append('_full_text @@ plainto_tsquery(\'{fulltext}\')'.format(fulltext=fulltext))
 
             where = 'WHERE %s' % ' AND '.join(where) if where else ''
 
