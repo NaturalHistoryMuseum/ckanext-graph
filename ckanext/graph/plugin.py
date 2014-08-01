@@ -60,8 +60,6 @@ class GraphPlugin(p.SingletonPlugin):
 
     # IDatastore
     def datastore_search(self, context, data_dict, all_field_ids, query_dict):
-        print data_dict
-        print 'SEARCH'
         return query_dict
 
     def datastore_validate(self, context, data_dict, all_field_ids):
