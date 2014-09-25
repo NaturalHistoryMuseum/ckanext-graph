@@ -19,7 +19,7 @@ ignore_empty = p.toolkit.get_validator('ignore_empty')
 Invalid = df.Invalid
 Missing = df.Missing
 
-DATE_INTERVALS = ['day', 'month', 'year']
+DATE_INTERVALS = ['minute', 'hour', 'day', 'month', 'year']
 
 class GraphPlugin(p.SingletonPlugin):
     """
@@ -116,7 +116,7 @@ class GraphPlugin(p.SingletonPlugin):
             where = 'WHERE %s' % ' AND '.join(where) if where else ''
 
             data_dict = {
-                'sql': 'SELECT date_trunc(\'{date_interval}\', "{date_field}"::date) AS date, COUNT(*) AS count FROM "{resource_id}" {where} GROUP BY 1 ORDER BY 1'.format(
+                'sql': 'SELECT date_trunc(\'{date_interval}\', "{date_field}"::timestamp) AS date, COUNT(*) AS count FROM "{resource_id}" {where} GROUP BY 1 ORDER BY 1'.format(
                     date_interval=date_interval,
                     date_field=data_dict['resource_view'].get('date_field'),
                     resource_id=data_dict['resource']['id'],
@@ -157,8 +157,9 @@ class GraphPlugin(p.SingletonPlugin):
                         }
                 }
 
+                # TODO: This label should be dynamic
                 count_dict = {
-                    'title': 'Per year',
+                    'title': 'Over time',
                     'data': [],
                     'options': {
                         'series': {
