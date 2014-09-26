@@ -7,6 +7,7 @@ from ckan.common import _, c
 import ckan.lib.navl.dictization_functions as df
 import ckan.logic as logic
 import dateutil.parser
+import datetime
 from ckanext.datastore.interfaces import IDatastore
 from ckanext.graph.logic.validators import is_boolean, in_list
 from pylons import config
@@ -135,16 +136,11 @@ class GraphPlugin(p.SingletonPlugin):
                     'grid': {
                         'hoverable': True,
                         'clickable': True
+                    },
+                    'xaxis': {
+                        'mode': 'time'
                     }
                 }
-
-                # If date_interval is not year, use the category plugin for text labels
-
-                if date_interval != 'year':
-                    default_options['xaxis'] = {
-                        'mode': "categories",
-                        'tickLength': 0
-                    }
 
                 total_dict = {
                     'title': 'Total records',
@@ -181,16 +177,8 @@ class GraphPlugin(p.SingletonPlugin):
                     date = dateutil.parser.parse(record['date'])
                     count = int(record['count'])
 
-                    # Build a date label, including all values up to and including the current interval
-                    # So for month, we want month-year. For year we just want year
-                    label_parts = []
-                    for d in reversed(DATE_INTERVALS):
-                        label_parts.append(str(getattr(date, d)))
+                    label = int((date - datetime.datetime(1970, 1, 1)).total_seconds()*1000)
 
-                        if d == date_interval:
-                            break
-
-                    label = '-'.join(reversed(label_parts))
                     total += count
 
                     total_dict['data'].append([label, total])
