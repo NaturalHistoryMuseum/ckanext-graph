@@ -27,7 +27,7 @@ class GraphPlugin(p.SingletonPlugin):
     """
     p.implements(p.IConfigurer)
     p.implements(p.IResourceView, inherit=True)
-    p.implements(IDatastore)
+    p.implements(IDatastore, inherit=True)
 
     datastore_fields = []
 
