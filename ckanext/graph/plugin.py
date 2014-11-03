@@ -139,6 +139,9 @@ class GraphPlugin(p.SingletonPlugin):
                     },
                     'xaxis': {
                         'mode': 'time'
+                    },
+                    'yaxis': {
+                        'tickDecimals': 0
                     }
                 }
 
