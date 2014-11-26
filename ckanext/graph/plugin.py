@@ -9,14 +9,17 @@ import ckan.logic as logic
 import dateutil.parser
 import datetime
 from ckanext.datastore.interfaces import IDatastore
-from ckanext.graph.logic.validators import is_boolean, in_list
-from pylons import config
+from ckanext.graph.logic.validators import is_boolean, in_list, is_date_castable
+import logging
 from ckan.common import json, request, _, response
+from sqlalchemy.exc import DataError
 get_action = logic.get_action
-
 
 not_empty = p.toolkit.get_validator('not_empty')
 ignore_empty = p.toolkit.get_validator('ignore_empty')
+
+log = logging.getLogger(__name__)
+
 Invalid = df.Invalid
 Missing = df.Missing
 
@@ -47,7 +50,7 @@ class GraphPlugin(p.SingletonPlugin):
             'title': 'Graph',
             'schema': {
                 'temporal': [is_boolean],
-                'date_field': [not_empty, in_list(self.list_datastore_fields())],
+                'date_field': [not_empty, in_list(self.list_datastore_fields()), is_date_castable],
                 'date_interval': [not_empty, in_list(DATE_INTERVALS)],
             },
             'icon': 'bar-chart',
@@ -56,8 +59,6 @@ class GraphPlugin(p.SingletonPlugin):
             'preview_enabled': False,
             'full_page_edit': False
         }
-
-    # TODO: Validate field can be date cast
 
     # IDatastore
     def datastore_search(self, context, data_dict, all_field_ids, query_dict):
@@ -105,7 +106,6 @@ class GraphPlugin(p.SingletonPlugin):
                     try:
                         (field, value) = f.split(':')
                         where.append('"{field}" = \'{value}\''.format(field=field, value=value))
-
                     except ValueError:
                         pass
 
@@ -127,11 +127,9 @@ class GraphPlugin(p.SingletonPlugin):
 
             try:
                 records = p.toolkit.get_action('datastore_search_sql')({}, data_dict)['records']
-            except toolkit.ValidationError:
-                # TODO: Log error
-                pass
+            except (DataError, toolkit.ValidationError), e:
+                log.critical(e)
             else:
-
                 default_options = {
                     'grid': {
                         'hoverable': True,

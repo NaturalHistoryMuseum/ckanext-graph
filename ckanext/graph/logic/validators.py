@@ -5,9 +5,10 @@ Created by 'bens3' on 2013-06-21.
 Copyright (c) 2013 'bens3'. All rights reserved.
 """
 
-
+import ckan.plugins as p
 from ckan.common import _
 import ckan.lib.navl.dictization_functions as df
+from sqlalchemy.exc import DataError
 
 Invalid = df.Invalid
 Missing = df.Missing
@@ -43,3 +44,28 @@ def in_list(list_possible_values):
             raise Invalid('"{0}" is not a valid parameter'.format(data[key]))
 
     return validate
+
+
+def is_date_castable(value, context):
+    """
+    Validator to ensure the date is castable to a date field
+    @param value:
+    @param context:
+    @return:
+    """
+
+    resource = context['resource']
+
+    data_dict = {
+        'sql': 'SELECT "{date_field}"::timestamp AS date FROM "{resource_id}" LIMIT 1 '.format(
+            date_field=value,
+            resource_id=resource.id,
+            )
+        }
+
+    try:
+        p.toolkit.get_action('datastore_search_sql')({}, data_dict)
+    except DataError:
+        raise Invalid('Field {0} cannot be cast into a date. Are you sure it\'s a date field?'.format(value))
+
+    return value
