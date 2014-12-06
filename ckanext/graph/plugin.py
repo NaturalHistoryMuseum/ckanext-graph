@@ -52,6 +52,9 @@ class GraphPlugin(p.SingletonPlugin):
                 'temporal': [is_boolean],
                 'date_field': [not_empty, in_list(self.list_datastore_fields()), is_date_castable],
                 'date_interval': [not_empty, in_list(DATE_INTERVALS)],
+                'count_field': [is_boolean],
+                'count_field_label': [],
+                'count_field_name': [not_empty, in_list(self.list_datastore_fields())],
             },
             'icon': 'bar-chart',
             'iframed': False,
@@ -80,6 +83,46 @@ class GraphPlugin(p.SingletonPlugin):
             return True
         return False
 
+    @staticmethod
+    def _query(select, resource_id, group_by=''):
+
+        # Add filters from request
+
+        where = []
+
+        filter_str = request.params.get('filters')
+
+        if filter_str:
+            for f in filter_str.split('|'):
+                try:
+                    (field, value) = f.split(':')
+
+                    if field != '_f':
+                        where.append('"{field}" = \'{value}\''.format(field=field, value=value))
+
+                except ValueError:
+                    pass
+
+        # Full text filter
+        fulltext = request.params.get('q')
+
+        if fulltext:
+            where.append('_full_text @@ plainto_tsquery(\'{fulltext}\')'.format(fulltext=fulltext))
+
+        data_dict = {
+            'sql': '{select} FROM "{resource_id}" {where} {group_by}'.format(
+                select=select,
+                resource_id=resource_id,
+                where='WHERE %s' % ' AND '.join(where) if where else '',
+                group_by=group_by
+                )
+            }
+
+        try:
+            return p.toolkit.get_action('datastore_search_sql')({}, data_dict)['records']
+        except (DataError, toolkit.ValidationError), e:
+            log.critical(e)
+
     def setup_template_variables(self, context, data_dict):
         """Setup variables available to templates"""
         self.datastore_fields = self._get_datastore_fields(data_dict['resource']['id'])
@@ -88,48 +131,58 @@ class GraphPlugin(p.SingletonPlugin):
             'datastore_field_options':  self.datastore_fields,
             'date_interval_options': [{'value': interval, 'text': interval} for interval in DATE_INTERVALS],
             'defaults': {},
-            'graphs': []
+            'graphs': [],
+            'resource': data_dict['resource']
         }
 
+        if data_dict['resource_view'].get('count_field', None):
+
+            field_name = data_dict['resource_view'].get('count_field_name')
+
+            select = 'select {field_name} as fld, count ({field_name}) as count'.format(
+                field_name=field_name
+            )
+
+            records = self._query(select, data_dict['resource']['id'], group_by='GROUP BY %s ORDER BY count DESC LIMIT 25' % field_name)
+
+            if records:
+
+                count_dict = {
+                    'title': data_dict['resource_view'].get('count_field_label', None) or field_name,
+                    'data': [],
+                    'options': {
+                        'bars': {
+                            'show': True,
+                            'barWidth': 0.6,
+                            'align': "center"
+                        },
+                        'xaxis': {
+                            'ticks': [],
+                            'rotateTicks': 60,
+                        }
+                    }
+                }
+
+                for i, record in enumerate(records):
+                    count_dict['data'].append([i, record['count']])
+                    count_dict['options']['xaxis']['ticks'].append([i, record['fld']])
+
+                vars['graphs'].append(count_dict)
+
+        # We we have a statistics graph
         if data_dict['resource_view'].get('temporal', None):
 
             date_interval = data_dict['resource_view'].get('date_interval')
 
-            # Add filters from request
+            select = 'SELECT date_trunc(\'{date_interval}\', "{date_field}"::timestamp) AS date, COUNT(*) AS count'.format(
+                date_interval=date_interval,
+                date_field=data_dict['resource_view'].get('date_field')
+            )
 
-            where = []
+            records = self._query(select, data_dict['resource']['id'], group_by='GROUP BY 1 ORDER BY 1')
 
-            filter_str = request.params.get('filters')
+            if records:
 
-            if filter_str:
-                for f in filter_str.split('|'):
-                    try:
-                        (field, value) = f.split(':')
-                        where.append('"{field}" = \'{value}\''.format(field=field, value=value))
-                    except ValueError:
-                        pass
-
-            # Full text filter
-            fulltext = request.params.get('q')
-            if fulltext:
-                where.append('_full_text @@ plainto_tsquery(\'{fulltext}\')'.format(fulltext=fulltext))
-
-            where = 'WHERE %s' % ' AND '.join(where) if where else ''
-
-            data_dict = {
-                'sql': 'SELECT date_trunc(\'{date_interval}\', "{date_field}"::timestamp) AS date, COUNT(*) AS count FROM "{resource_id}" {where} GROUP BY 1 ORDER BY 1'.format(
-                    date_interval=date_interval,
-                    date_field=data_dict['resource_view'].get('date_field'),
-                    resource_id=data_dict['resource']['id'],
-                    where=where
-                    )
-                }
-
-            try:
-                records = p.toolkit.get_action('datastore_search_sql')({}, data_dict)['records']
-            except (DataError, toolkit.ValidationError), e:
-                log.critical(e)
-            else:
                 default_options = {
                     'grid': {
                         'hoverable': True,
@@ -154,9 +207,8 @@ class GraphPlugin(p.SingletonPlugin):
                         }
                 }
 
-                # TODO: This label should be dynamic
                 count_dict = {
-                    'title': 'Over time',
+                    'title': 'Per %s' % date_interval,
                     'data': [],
                     'options': {
                         'series': {
