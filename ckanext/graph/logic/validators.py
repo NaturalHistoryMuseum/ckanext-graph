@@ -47,6 +47,7 @@ def in_list(list_possible_values):
 
 
 def is_date_castable(value, context):
+
     """
     Validator to ensure the date is castable to a date field
     @param value:
@@ -54,18 +55,20 @@ def is_date_castable(value, context):
     @return:
     """
 
-    resource = context['resource']
+    if value:
 
-    data_dict = {
-        'sql': 'SELECT "{date_field}"::timestamp AS date FROM "{resource_id}" LIMIT 1 '.format(
-            date_field=value,
-            resource_id=resource.id,
+        sql = 'SELECT "{date_field_name}"::timestamp AS date FROM "{resource_id}" LIMIT 1 '.format(
+            date_field_name=value,
+            resource_id=context['resource'].id,
             )
+
+        data_dict = {
+            'sql': sql
         }
 
-    try:
-        p.toolkit.get_action('datastore_search_sql')({}, data_dict)
-    except DataError:
-        raise Invalid('Field {0} cannot be cast into a date. Are you sure it\'s a date field?'.format(value))
+        try:
+            p.toolkit.get_action('datastore_search_sql')({}, data_dict)
+        except DataError:
+            raise Invalid('Field {0} cannot be cast into a date. Are you sure it\'s a date field?'.format(value))
 
     return value

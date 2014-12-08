@@ -4,13 +4,13 @@
 
     <legend>Graph types</legend>
 
-    {% call form.checkbox('temporal', label=_('Temporal count'), value=1, checked=data.temporal, error=errors.temporal, attrs={'data-toggle': "collapse", 'data-target':"#temporal-options"}) %}
+    {% call form.checkbox('show_date', label=_('Temporal count'), value=1, checked=data.show_date, error=errors.show_date, attrs={'data-toggle': "collapse", 'data-target':"#date-options"}) %}
       {{ form.info(_('Plot dataset growth over time.')) }}
     {% endcall %}
 
-    <div id="temporal-options" class="collapse {% if data.temporal %} in {% endif %}">
+    <div id="date-options" class="collapse {% if data.show_date %} in {% endif %}">
 
-        {% call form.select('date_field', label=_('Date field'), options=datastore_field_options, selected=data.date_field, error=errors.date_field, is_required=true) %}
+        {% call form.select('date_field', label=_('Date field'), options=date_field_options, selected=data.date_field, error=errors.date_field, is_required=true) %}
           {{ form.info(_('Date field to use when plotting temporal dataset.'), inline=True) }}
         {% endcall %}
 
@@ -20,16 +20,16 @@
 
     </div>
 
-    {% call form.checkbox('count_field', label=_('Field count'), value=1, checked=data.count_field, error=errors.count_field, attrs={'data-toggle': "collapse", 'data-target':"#count-field-options"}) %}
+    {% call form.checkbox('show_count', label=_('Field count'), value=1, checked=data.show_count, error=errors.show_count, attrs={'data-toggle': "collapse", 'data-target':"#count-options"}) %}
       {{ form.info(_('Show count of field values.')) }}
     {% endcall %}
 
-    <div id="count-field-options" class="collapse {% if data.count_field %} in {% endif %}">
+    <div id="count-options" class="collapse {% if data.show_count %} in {% endif %}">
 
-        {% call form.select('count_field_name', label=_('Field'), options=datastore_field_options, selected=data.count_field_name, error=errors.count_field_name, is_required=true) %}
+        {% call form.select('count_field', label=_('Field'), options=count_field_options, selected=data.count_field, error=errors.count_field, is_required=true) %}
         {% endcall %}
 
-        {% call form.input('count_field_label', label=_('Label'), value=data.count_field_label, error=errors.count_field_label) %}
+        {% call form.input('count_label', label=_('Label'), value=data.count_label, error=errors.count_label) %}
         {% endcall %}
 
     </div>
