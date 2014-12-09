@@ -69,7 +69,7 @@
                         text = points[barNumber];
                     }
                     var c = plot.p2c(point);
-                    ctx.fillText(text.toString(10), c.left + offset.left, c.top + offset.top + 3)
+                    ctx.fillText(text.toString(10), c.left + offset.left, c.top + offset.top + series.bars.numbers.top || 3)
                 }
             }
         });
