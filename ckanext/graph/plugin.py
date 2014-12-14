@@ -269,8 +269,10 @@ class GraphPlugin(p.SingletonPlugin):
                         'series': {
                             'lines': {'show': True},
                             'points': {'show': True}
-                            }
-                        }
+                            },
+                        '_date_interval': date_interval
+                        },
+
                 }
 
                 count_dict = {
