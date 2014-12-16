@@ -3,8 +3,6 @@ import urllib
 import logging
 import datetime
 import dateutil.parser
-from sqlalchemy.exc import DatabaseError, DBAPIError
-from beaker.cache import cache_region
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as toolkit
@@ -13,11 +11,9 @@ import ckan.logic as logic
 from ckan.common import request
 
 from ckanext.datastore import interfaces
-from ckanext.datastore import db as datastore_db
-from ckanext.datastore.helpers import is_single_statement
 
 from ckanext.graph.logic.validators import is_boolean, in_list, is_date_castable
-from ckanext.graph.db import _get_engine
+from ckanext.graph.db import run_stats_query
 
 get_action = logic.get_action
 
@@ -105,32 +101,8 @@ class GraphPlugin(p.SingletonPlugin):
 
         (ts_query, where_clause, values) = self._get_request_where_clause(data_dict, field_types)
         # Prepare and run our query
-        @cache_region('permanent', 'stats_view_query')
-        def run_stats_query(select, resource_id, ts_query, where_clause, group_by):
-            query = 'SELECT {select} FROM "{resource_id}" {ts_query} {where_clause} {group_by}'.format(
-                select=select,
-                resource_id=resource_id,
-                where_clause=where_clause,
-                ts_query=ts_query,
-                group_by=group_by
-            )
 
-            if not is_single_statement(query):
-                raise datastore_db.ValidationError({
-                    'query': ['Query is not a single statement.']
-                })
-
-            # The interfaces.IDatastore return SQL to be directly executed
-            # So just use an sqlalchemy connection, rather than the API
-            # So we don't have to faff around converting to pure SQL
-            engine = _get_engine()
-            with engine.begin() as connection:
-                try:
-                    query_result = connection.execute(query, values)
-                    return query_result.fetchall()
-                except (DatabaseError, DBAPIError):
-                    pass
-        return run_stats_query(select, resource_id, ts_query, where_clause, group_by)
+        return run_stats_query(select, resource_id, ts_query, where_clause, group_by, values)
 
 
     def _get_request_where_clause(self, data_dict, field_types):
