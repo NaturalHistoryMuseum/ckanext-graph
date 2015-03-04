@@ -100,8 +100,8 @@ class GraphPlugin(p.SingletonPlugin):
         field_types = self._get_datastore_fields(resource_id)
 
         (ts_query, where_clause, values) = self._get_request_where_clause(data_dict, field_types)
-        # Prepare and run our query
 
+        # Prepare and run our query
         return run_stats_query(select, resource_id, ts_query, where_clause, group_by, values)
 
 
@@ -181,11 +181,11 @@ class GraphPlugin(p.SingletonPlugin):
 
             count_field = data_dict['resource_view'].get('count_field')
 
-            select = '{count_field} as fld, count ({count_field}) as count'.format(
+            select = '"{count_field}" as fld, count (*) as count'.format(
                 count_field=count_field
             )
 
-            records = self._query(context, select, data_dict['resource']['id'], group_by='GROUP BY %s ORDER BY count DESC LIMIT 25' % count_field)
+            records = self._query(context, select, data_dict['resource']['id'], group_by='GROUP BY "%s" ORDER BY count DESC LIMIT 25' % count_field)
 
             if records:
 
@@ -206,8 +206,9 @@ class GraphPlugin(p.SingletonPlugin):
                 }
 
                 for i, record in enumerate(records):
+                    fld = 'Empty' if record['fld'] is None else record['fld']
                     count_dict['data'].append([i, record['count']])
-                    count_dict['options']['xaxis']['ticks'].append([i, record['fld']])
+                    count_dict['options']['xaxis']['ticks'].append([i, fld])
 
                 vars['graphs'].append(count_dict)
 
