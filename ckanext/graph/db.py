@@ -16,7 +16,7 @@ def _get_engine():
     return _read_engine
 
 
-@cache_region('permanent', 'stats_view_query')
+# @cache_region('permanent', 'stats_view_query')
 def run_stats_query(select, resource_id, ts_query, where_clause, group_by, values):
     query = 'SELECT {select} FROM "{resource_id}" {ts_query} {where_clause} {group_by}'.format(
         select=select,
@@ -25,6 +25,7 @@ def run_stats_query(select, resource_id, ts_query, where_clause, group_by, value
         ts_query=ts_query,
         group_by=group_by
     )
+    print(query)
 
     if not is_single_statement(query):
         raise datastore_db.ValidationError({
