@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# encoding: utf-8
+#
+# This file is part of ckanext-graph
+# Created by the Natural History Museum in London, UK
+
 from pylons import config
 from sqlalchemy import create_engine
 from sqlalchemy.exc import DatabaseError, DBAPIError
@@ -8,17 +14,27 @@ from ckanext.datastore.helpers import is_single_statement
 _read_engine = None
 
 def _get_engine():
-    """Return an SQL Alchemy engine to be used by this extention."""
+    ''' '''
     global _read_engine
 
     if _read_engine is None:
-        _read_engine = create_engine(config['ckan.datastore.read_url'])
+        _read_engine = create_engine(config[u'ckan.datastore.read_url'])
     return _read_engine
 
 
-@cache_region('permanent', 'stats_view_query')
+@cache_region(u'permanent', u'stats_view_query')
 def run_stats_query(select, resource_id, ts_query, where_clause, group_by, values):
-    query = 'SELECT {select} FROM "{resource_id}" {ts_query} {where_clause} {group_by}'.format(
+    '''
+
+    :param select: 
+    :param resource_id: 
+    :param ts_query: 
+    :param where_clause: 
+    :param group_by: 
+    :param values: 
+
+    '''
+    query = u'SELECT {select} FROM "{resource_id}" {ts_query} {where_clause} {group_by}'.format(
         select=select,
         resource_id=resource_id,
         where_clause=where_clause,
@@ -28,7 +44,7 @@ def run_stats_query(select, resource_id, ts_query, where_clause, group_by, value
 
     if not is_single_statement(query):
         raise datastore_db.ValidationError({
-            'query': ['Query is not a single statement.']
+            u'query': [u'Query is not a single statement.']
         })
 
     # The interfaces.IDatastore return SQL to be directly executed

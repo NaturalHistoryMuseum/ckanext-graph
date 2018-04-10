@@ -1,9 +1,9 @@
+
 #!/usr/bin/env python
 # encoding: utf-8
-"""
-Created by 'bens3' on 2013-06-21.
-Copyright (c) 2013 'bens3'. All rights reserved.
-"""
+#
+# This file is part of ckanext-graph
+# Created by the Natural History Museum in London, UK
 
 import ckan.plugins as p
 from ckan.common import _
@@ -16,59 +16,71 @@ Missing = df.Missing
 
 def is_boolean(value, context):
 
-    """Validate a field as a boolean. Assuming missing value means false"""
+    '''Validate a field as a boolean. Assuming missing value means false
+
+    :param value: 
+    :param context: 
+
+    '''
 
     if isinstance(value, bool):
         return value
-    elif (isinstance(value, str) or isinstance(value, unicode)) and value.lower() in ['true', 'yes', 't', 'y', '1']:
+    elif (isinstance(value, str) or isinstance(value, unicode)) and value.lower() in [u'true', u'yes', u't', u'y', u'1']:
         return True
-    elif (isinstance(value, str) or isinstance(value, unicode)) and value.lower() in ['false', 'no', 'f', 'n', '0']:
+    elif (isinstance(value, str) or isinstance(value, unicode)) and value.lower() in [u'false', u'no', u'f', u'n', u'0']:
         return False
     elif isinstance(value, Missing):
         return False
     else:
-        raise Invalid(_('Value must a true/false value (ie. true/yes/t/y/1 or false/no/f/n/0)'))
+        raise Invalid(_(u'Value must a true/false value (ie. true/yes/t/y/1 or false/no/f/n/0)'))
 
 
 def in_list(list_possible_values):
-    '''
-    Validator that checks that the input value is one of the given
+    '''Validator that checks that the input value is one of the given
     possible values.
 
     :param list_possible_values: function that returns list of possible values
         for validated field
-    :type possible_values: function
+
     '''
     def validate(key, data, errors, context):
+        '''
+
+        :param key: 
+        :param data: 
+        :param errors: 
+        :param context: 
+
+        '''
         if not data[key] in list_possible_values:
-            raise Invalid('"{0}" is not a valid parameter'.format(data[key]))
+            raise Invalid(u'"{0}" is not a valid parameter'.format(data[key]))
 
     return validate
 
 
 def is_date_castable(value, context):
 
-    """
-    Validator to ensure the date is castable to a date field
-    @param value:
-    @param context:
-    @return:
-    """
+    '''Validator to ensure the date is castable to a date field
+
+    :param value: param context:
+    :param context: 
+
+    '''
 
     if value:
 
-        sql = 'SELECT "{date_field_name}"::timestamp AS date FROM "{resource_id}" LIMIT 1 '.format(
+        sql = u'SELECT "{date_field_name}"::timestamp AS date FROM "{resource_id}" LIMIT 1 '.format(
             date_field_name=value,
-            resource_id=context['resource'].id,
+            resource_id=context[u'resource'].id,
             )
 
         data_dict = {
-            'sql': sql
+            u'sql': sql
         }
 
         try:
-            p.toolkit.get_action('datastore_search_sql')({}, data_dict)
+            p.toolkit.get_action(u'datastore_search_sql')({}, data_dict)
         except DataError:
-            raise Invalid('Field {0} cannot be cast into a date. Are you sure it\'s a date field?'.format(value))
+            raise Invalid(u'Field {0} cannot be cast into a date. Are you sure it\'s a date field?'.format(value))
 
     return value
