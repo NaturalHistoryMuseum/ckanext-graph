@@ -4,21 +4,23 @@
 # This file is part of ckanext-graph
 # Created by the Natural History Museum in London, UK
 
-from pylons import config
-from sqlalchemy import create_engine
-from sqlalchemy.exc import DatabaseError, DBAPIError
 from beaker.cache import cache_region
 from ckanext.datastore import db as datastore_db
+from sqlalchemy import create_engine
+from sqlalchemy.exc import DBAPIError, DatabaseError
+
+from ckan.plugins import toolkit
 from ckanext.datastore.helpers import is_single_statement
 
 _read_engine = None
+
 
 def _get_engine():
     ''' '''
     global _read_engine
 
     if _read_engine is None:
-        _read_engine = create_engine(config[u'ckan.datastore.read_url'])
+        _read_engine = create_engine(toolkit.config[u'ckan.datastore.read_url'])
     return _read_engine
 
 
@@ -34,18 +36,18 @@ def run_stats_query(select, resource_id, ts_query, where_clause, group_by, value
     :param values: 
 
     '''
-    query = u'SELECT {select} FROM "{resource_id}" {ts_query} {where_clause} {group_by}'.format(
-        select=select,
-        resource_id=resource_id,
-        where_clause=where_clause,
-        ts_query=ts_query,
-        group_by=group_by
-    )
+    query = u'SELECT {select} ' \
+            u'FROM "{resource_id}" {ts_query} ' \
+            u'{where_clause} {group_by}'.format(select=select,
+                                                resource_id=resource_id,
+                                                where_clause=where_clause,
+                                                ts_query=ts_query,
+                                                group_by=group_by)
 
     if not is_single_statement(query):
         raise datastore_db.ValidationError({
             u'query': [u'Query is not a single statement.']
-        })
+            })
 
     # The interfaces.IDatastore return SQL to be directly executed
     # So just use an sqlalchemy connection, rather than the API

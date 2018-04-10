@@ -4,42 +4,33 @@
 # This file is part of ckanext-graph
 # Created by the Natural History Museum in London, UK
 
-import pylons
-import urllib
-import logging
 import datetime
+import logging
+import urllib
+
 import dateutil.parser
-
-import ckan.plugins as p
-import ckan.plugins.toolkit as toolkit
-import ckan.lib.navl.dictization_functions as df
-import ckan.logic as logic
-from ckan.common import request
-
-from ckanext.datastore import interfaces
-
-from ckanext.graph.logic.validators import is_boolean, in_list, is_date_castable
 from ckanext.graph.db import run_stats_query
+from ckanext.graph.logic.validators import in_list, is_boolean, is_date_castable
 
-get_action = logic.get_action
+import ckanext.datastore.interfaces as datastore_interfaces
+from ckan.plugins import (PluginImplementations, SingletonPlugin, implements, interfaces,
+                          toolkit)
 
-not_empty = p.toolkit.get_validator(u'not_empty')
-ignore_empty = p.toolkit.get_validator(u'ignore_empty')
+not_empty = toolkit.get_validator(u'not_empty')
+ignore_empty = toolkit.get_validator(u'ignore_empty')
 
 log = logging.getLogger(__name__)
-
-Invalid = df.Invalid
-Missing = df.Missing
 
 DATE_INTERVALS = [u'minute', u'hour', u'day', u'month', u'year']
 
 TEMPORAL_FIELD_TYPES = [u'text', u'timestamp', u'date', u'citext']
 
-class GraphPlugin(p.SingletonPlugin):
-    '''Gallery plugin'''
-    p.implements(p.IConfigurer)
-    p.implements(p.IResourceView, inherit=True)
-    p.implements(interfaces.IDatastore, inherit=True)
+
+class GraphPlugin(SingletonPlugin):
+    '''Graph plugin'''
+    implements(interfaces.IConfigurer)
+    implements(interfaces.IResourceView, inherit=True)
+    implements(datastore_interfaces.IDatastore, inherit=True)
     datastore_field_names = []
 
     ## IConfigurer
@@ -49,9 +40,9 @@ class GraphPlugin(p.SingletonPlugin):
         :param config: 
 
         '''
-        p.toolkit.add_template_directory(config, u'theme/templates')
-        p.toolkit.add_public_directory(config, u'theme/public')
-        p.toolkit.add_resource(u'theme/public', u'ckanext-graph')
+        toolkit.add_template_directory(config, u'theme/templates')
+        toolkit.add_public_directory(config, u'theme/public')
+        toolkit.add_resource(u'theme/public', u'ckanext-graph')
 
     ## IResourceView
     def info(self):
@@ -61,18 +52,19 @@ class GraphPlugin(p.SingletonPlugin):
             u'title': u'Graph',
             u'schema': {
                 u'show_date': [is_boolean],
-                u'date_field': [ignore_empty, is_date_castable, in_list(self.datastore_field_names)],
+                u'date_field': [ignore_empty, is_date_castable,
+                                in_list(self.datastore_field_names)],
                 u'date_interval': [not_empty, in_list(DATE_INTERVALS)],
                 u'show_count': [is_boolean],
                 u'count_field': [ignore_empty, in_list(self.datastore_field_names)],
                 u'count_label': [],
-            },
+                },
             u'icon': u'bar-chart',
             u'iframed': False,
             u'filterable': True,
             u'preview_enabled': False,
             u'full_page_edit': False
-        }
+            }
 
     # IDatastore
     def datastore_search(self, context, data_dict, all_field_ids, query_dict):
@@ -137,19 +129,20 @@ class GraphPlugin(p.SingletonPlugin):
 
         # Build a data dict, ready to pass through to datastore interfaces
         data_dict = {
-            u'connection_url': pylons.config[u'ckan.datastore.write_url'],
+            u'connection_url': toolkit.config[u'ckan.datastore.write_url'],
             u'resource_id': resource_id,
             u'filters': self._get_request_filters(),
-            u'q': urllib.unquote(request.params.get(u'q', u''))
-        }
+            u'q': urllib.unquote(toolkit.request.params.get(u'q', u''))
+            }
 
         field_types = self._get_datastore_fields(resource_id)
 
-        (ts_query, where_clause, values) = self._get_request_where_clause(data_dict, field_types)
+        (ts_query, where_clause, values) = self._get_request_where_clause(data_dict,
+                                                                          field_types)
 
         # Prepare and run our query
-        return run_stats_query(select, resource_id, ts_query, where_clause, group_by, values)
-
+        return run_stats_query(select, resource_id, ts_query, where_clause, group_by,
+                               values)
 
     def _get_request_where_clause(self, data_dict, field_types):
         '''Return the where clause that applies to a query matching the given request
@@ -169,12 +162,12 @@ class GraphPlugin(p.SingletonPlugin):
             u'select': [],
             u'sort': [],
             u'where': []
-        }
+            }
 
-        for plugin in p.PluginImplementations(interfaces.IDatastore):
+        for plugin in PluginImplementations(interfaces.IDatastore):
             query_dict = plugin.datastore_search(
                 {}, data_dict, field_types, query_dict
-            )
+                )
 
         clauses = []
         values = []
@@ -194,11 +187,10 @@ class GraphPlugin(p.SingletonPlugin):
 
         return ts_query, where_clause, values
 
-
     def _get_request_filters(self):
         ''' '''
         filters = {}
-        for f in urllib.unquote(request.params.get(u'filters', u'')).split(u'|'):
+        for f in urllib.unquote(toolkit.request.params.get(u'filters', u'')).split(u'|'):
             if f:
                 (k, v) = f.split(u':', 1)
                 if k not in filters:
@@ -219,41 +211,57 @@ class GraphPlugin(p.SingletonPlugin):
         self.datastore_field_names = datastore_fields.keys()
 
         vars = {
-            u'count_field_options':  [None] + [{u'value': field_name, u'text': field_name} for field_name, field_type in datastore_fields.items()],
-            u'date_field_options': [None] + [{u'value': field_name, u'text': field_name} for field_name, field_type in datastore_fields.items() if field_type in TEMPORAL_FIELD_TYPES],
-            u'date_interval_options': [{u'value': interval, u'text': interval} for interval in DATE_INTERVALS],
+            u'count_field_options': [None] + [{
+                u'value': field_name,
+                u'text': field_name
+                } for field_name, field_type in
+                datastore_fields.items()],
+            u'date_field_options': [None] + [{
+                u'value': field_name,
+                u'text': field_name
+                } for field_name, field_type in
+                datastore_fields.items() if
+                field_type in TEMPORAL_FIELD_TYPES],
+            u'date_interval_options': [{
+                u'value': interval,
+                u'text': interval
+                } for interval in DATE_INTERVALS],
             u'defaults': {},
             u'graphs': [],
             u'resource': data_dict[u'resource']
-        }
+            }
 
-        if data_dict[u'resource_view'].get(u'show_count', None) and data_dict[u'resource_view'].get(u'count_field', None):
+        if data_dict[u'resource_view'].get(u'show_count', None) and data_dict[
+            u'resource_view'].get(u'count_field', None):
 
             count_field = data_dict[u'resource_view'].get(u'count_field')
 
             select = u'"{count_field}" as fld, count (*) as count'.format(
                 count_field=count_field
-            )
+                )
 
-            records = self._query(context, select, data_dict[u'resource'][u'id'], group_by=u'GROUP BY "%s" ORDER BY count DESC LIMIT 25' % count_field)
+            records = self._query(context, select, data_dict[u'resource'][u'id'],
+                                  group_by=u'GROUP BY "%s" ORDER BY count DESC LIMIT '
+                                           u'25' % count_field)
 
             if records:
 
                 count_dict = {
-                    u'title': data_dict[u'resource_view'].get(u'count_label', None) or count_field,
+                    u'title': data_dict[u'resource_view'].get(u'count_label',
+                                                              None) or count_field,
                     u'data': [],
                     u'options': {
                         u'bars': {
                             u'show': True,
                             u'barWidth': 0.6,
                             u'align': u'center'
-                        },
+                            },
                         u'xaxis': {
                             u'ticks': [],
                             u'rotateTicks': 60,
+                            }
                         }
                     }
-                }
 
                 for i, record in enumerate(records):
                     fld = u'Empty' if record[u'fld'] is None else record[u'fld']
@@ -263,16 +271,19 @@ class GraphPlugin(p.SingletonPlugin):
                 vars[u'graphs'].append(count_dict)
 
         # Do we want a date statistics graph
-        if data_dict[u'resource_view'].get(u'show_date', None) and data_dict[u'resource_view'].get(u'date_field', None):
+        if data_dict[u'resource_view'].get(u'show_date', None) and data_dict[
+            u'resource_view'].get(u'date_field', None):
 
             date_interval = data_dict[u'resource_view'].get(u'date_interval')
 
-            select = u'date_trunc(\'{date_interval}\', "{date_field}"::timestamp) AS date, COUNT(*) AS count'.format(
+            select = u'date_trunc(\'{date_interval}\', "{date_field}"::timestamp) AS ' \
+                     u'date, COUNT(*) AS count'.format(
                 date_interval=date_interval,
                 date_field=data_dict[u'resource_view'].get(u'date_field')
-            )
+                )
 
-            records = self._query(context, select, data_dict[u'resource'][u'id'], group_by=u'GROUP BY 1 ORDER BY 1')
+            records = self._query(context, select, data_dict[u'resource'][u'id'],
+                                  group_by=u'GROUP BY 1 ORDER BY 1')
 
             if records:
 
@@ -280,27 +291,31 @@ class GraphPlugin(p.SingletonPlugin):
                     u'grid': {
                         u'hoverable': True,
                         u'clickable': True
-                    },
+                        },
                     u'xaxis': {
                         u'mode': u'time'
-                    },
+                        },
                     u'yaxis': {
                         u'tickDecimals': 0
+                        }
                     }
-                }
 
                 total_dict = {
                     u'title': u'Total records',
                     u'data': [],
                     u'options': {
                         u'series': {
-                            u'lines': {u'show': True},
-                            u'points': {u'show': True}
+                            u'lines': {
+                                u'show': True
+                                },
+                            u'points': {
+                                u'show': True
+                                }
                             },
                         u'_date_interval': date_interval
                         },
 
-                }
+                    }
 
                 count_dict = {
                     u'title': u'Per %s' % date_interval,
@@ -311,10 +326,10 @@ class GraphPlugin(p.SingletonPlugin):
                                 u'show': True,
                                 u'barWidth': 0.6,
                                 u'align': u'center'
+                                }
                             }
                         }
                     }
-                }
 
                 total_dict[u'options'].update(default_options)
                 count_dict[u'options'].update(default_options)
@@ -326,7 +341,8 @@ class GraphPlugin(p.SingletonPlugin):
                     # This works for all date and string fields
                     date = dateutil.parser.parse(str(record[u'date']))
                     count = int(record[u'count'])
-                    label = int((date - datetime.datetime(1970, 1, 1)).total_seconds()*1000)
+                    label = int(
+                        (date - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
                     total += count
                     total_dict[u'data'].append([label, total])
                     count_dict[u'data'].append([label, count])
@@ -343,13 +359,17 @@ class GraphPlugin(p.SingletonPlugin):
 
         '''
 
-        data = {u'resource_id': resource_id, u'limit': 0}
+        data = {
+            u'resource_id': resource_id,
+            u'limit': 0
+            }
         fields = toolkit.get_action(u'datastore_search')({}, data)[u'fields']
 
         field_types = dict([(f[u'id'], f[u'type']) for f in fields])
         field_types[u'_id'] = u'int'
 
         return field_types
+
 
 def _get_records_from_datastore(resource, limit, offset):
     '''
@@ -359,10 +379,12 @@ def _get_records_from_datastore(resource, limit, offset):
     :param offset: 
 
     '''
-    data = {u'resource_id': resource[u'id']}
+    data = {
+        u'resource_id': resource[u'id']
+        }
     if limit:
         data[u'limit'] = limit
     if offset:
         data[u'offset'] = offset
-    records = p.toolkit.get_action(u'datastore_search')({}, data)[u'records']
+    records = toolkit.get_action(u'datastore_search')({}, data)[u'records']
     return records
