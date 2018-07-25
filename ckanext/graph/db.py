@@ -5,7 +5,7 @@
 # Created by the Natural History Museum in London, UK
 
 from beaker.cache import cache_region
-from ckanext.datastore import db as datastore_db
+from ckanext.datastore import backend as datastore_db
 from sqlalchemy import create_engine
 from sqlalchemy.exc import DBAPIError, DatabaseError
 
