@@ -7,13 +7,14 @@
 from sqlalchemy.exc import DataError
 
 from ckan.plugins import toolkit
+from ckanext.graph.lib import utils
 
 
 def is_boolean(value, context):
     '''Validate a field as a boolean. Assuming missing value means false
 
-    :param value: 
-    :param context: 
+    :param value:
+    :param context:
 
     '''
 
@@ -25,7 +26,7 @@ def is_boolean(value, context):
     elif (isinstance(value, str) or isinstance(value, unicode)) and value.lower() in [
         u'false', u'no', u'f', u'n', u'0']:
         return False
-    elif isinstance(value, toolkit.missing):
+    elif isinstance(value, type(toolkit.missing)):
         return False
     else:
         raise toolkit.Invalid(
@@ -45,10 +46,10 @@ def in_list(list_possible_values):
     def validate(key, data, errors, context):
         '''
 
-        :param key: 
-        :param data: 
-        :param errors: 
-        :param context: 
+        :param key:
+        :param data:
+        :param errors:
+        :param context:
 
         '''
         if not data[key] in list_possible_values:
@@ -60,26 +61,58 @@ def in_list(list_possible_values):
 def is_date_castable(value, context):
     '''Validator to ensure the date is castable to a date field
 
-    :param value: param context:
-    :param context: 
+    :param value:
+    :param context:
 
     '''
 
     if value:
+        fields = utils.get_datastore_field_types()
 
-        sql = u'SELECT "{date_field_name}"::timestamp AS date FROM "{resource_id}" ' \
-              u'LIMIT 1 '.format(date_field_name=value,
-                                 resource_id=context[u'resource'].id, )
+        field_type = fields[value]
 
-        data_dict = {
-            u'sql': sql
-            }
+        if field_type == u'date':
+            return value
+        else:
+            script = u'''
+            if (doc['data.{date_field_name}'].value != null) {{
+             try {{
+              new SimpleDateFormat('yyyy-MM-dd').parse(doc['data.{date_field_name}'].value);
+              return true;
+             }} catch (Exception e) {{
+              return false;
+             }}
+            }} else {{
+             return false;
+            }}
+            '''.format(date_field_name=value)
 
-        try:
-            toolkit.get_action(u'datastore_search_sql')({}, data_dict)
-        except DataError:
-            raise toolkit.Invalid(
-                u'Field {0} cannot be cast into a date. Are you sure it\'s a date '
-                u'field?'.format(value))
+            data_dict = {
+                u'search': {
+                    u'query': {
+                        u'bool': {
+                            u'filter': {
+                                u'script': {
+                                    u'script': {
+                                        u'source': script
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                u'resource_id': toolkit.c.resource[u'id']
+                }
+
+            failure = toolkit.Invalid(
+                    u'Field {0} cannot be cast into a date. Are you sure it\'s a date '
+                    u'field?'.format(value))
+
+            try:
+                result = toolkit.get_action(u'datastore_search_raw')({}, data_dict)
+                if result[u'total'] == 0:
+                    raise failure
+            except DataError:
+                raise failure
 
     return value
