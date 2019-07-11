@@ -185,7 +185,7 @@ class ElasticSearchQuery(Query):
             }
         results = toolkit.get_action('datastore_search_raw')({}, data_dict)
         aggs = results[u'aggregations']
-        extra_nesting = self._is_date_query or len(self.filters) > 0
+        extra_nesting = self._is_date_query or len(self.filters) > 0 or self.q is not None
         buckets = (aggs[self._aggregated_name] if extra_nesting else aggs)[self._bucket_name][
             u'buckets']
         records = [(b[u'key'], b.get(u'doc_count', 0)) for b in buckets]
