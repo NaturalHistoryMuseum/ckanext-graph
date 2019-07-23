@@ -70,6 +70,16 @@ class Query(object):
         '''
         pass
 
+    @classmethod
+    def new(cls, *args, **kwargs):
+        backend_type = toolkit.config.get(u'ckanext.graph.backend')
+        queries = {
+            'elasticsearch': ElasticSearchQuery,
+            'sql': SqlQuery
+            }
+        query_class = queries.get(backend_type, ElasticSearchQuery)
+        return query_class(*args, **kwargs)
+
 
 class ElasticSearchQuery(Query):
     def __init__(self, *args, **kwargs):
@@ -190,3 +200,16 @@ class ElasticSearchQuery(Query):
             u'buckets']
         records = [(b[u'key'], b.get(u'doc_count', 0)) for b in buckets]
         return records
+
+
+class SqlQuery(Query):
+    @property
+    def _date_query(self):
+        raise NotImplementedError()
+
+    @property
+    def _count_query(self):
+        raise NotImplementedError()
+
+    def run(self):
+        raise NotImplementedError()

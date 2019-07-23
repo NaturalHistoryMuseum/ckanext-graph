@@ -6,12 +6,12 @@
 
 import logging
 
-from ckanext.graph.db import ElasticSearchQuery
+from ckanext.graph.db import Query
 from ckanext.graph.lib import utils
 from ckanext.graph.logic.validators import in_list, is_boolean, is_date_castable
 
 import ckanext.datastore.interfaces as datastore_interfaces
-from ckan.plugins import (PluginImplementations, SingletonPlugin, implements, interfaces,
+from ckan.plugins import (SingletonPlugin, implements, interfaces,
                           toolkit)
 
 not_empty = toolkit.get_validator(u'not_empty')
@@ -159,7 +159,7 @@ class GraphPlugin(SingletonPlugin):
 
             count_field = data_dict[u'resource_view'].get(u'count_field')
 
-            count_query = ElasticSearchQuery(count_field=count_field)
+            count_query = Query.new(count_field=count_field)
 
             records = count_query.run()
 
@@ -195,7 +195,7 @@ class GraphPlugin(SingletonPlugin):
             date_interval = data_dict[u'resource_view'].get(u'date_interval')
             date_field = data_dict[u'resource_view'].get(u'date_field')
 
-            date_query = ElasticSearchQuery(date_field=date_field, date_interval=date_interval)
+            date_query = Query.new(date_field=date_field, date_interval=date_interval)
 
             records = date_query.run()
 
