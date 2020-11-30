@@ -39,8 +39,7 @@ class GraphPlugin(SingletonPlugin):
 
         '''
         toolkit.add_template_directory(config, u'theme/templates')
-        toolkit.add_public_directory(config, u'theme/public')
-        toolkit.add_resource(u'theme/fanstatic', u'ckanext-graph')
+        toolkit.add_resource(u'theme/assets', u'ckanext-graph')
 
     ## IResourceView
     def info(self):
