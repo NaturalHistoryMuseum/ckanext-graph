@@ -32,7 +32,7 @@ def get_request_filters():
     filters = {}
     for f in urllib.unquote(toolkit.request.params.get(u'filters', u'')).split(u'|'):
         if f:
-            (k, v) = f.split(u':', 1)
+            k, v = f.split(u':', 1)
             if k not in filters:
                 filters[k] = []
             filters[k].append(v)
