@@ -1,7 +1,7 @@
-import pytest
+from unittest.mock import MagicMock, patch
+
 from ckanext.graph.lib.utils import get_datastore_field_types, get_request_query, \
     get_request_filters
-from mock import MagicMock, patch
 
 
 class TestGetDatastoreFieldTypes(object):
@@ -12,15 +12,15 @@ class TestGetDatastoreFieldTypes(object):
     def test_using_raw_fields(self):
         resource_id = MagicMock()
         search_results = {
-            u'raw_fields': {
-                u'field1': {
-                    u'type': u'bert'
+            'raw_fields': {
+                'field1': {
+                    'type': 'bert'
                 },
-                u'field2': {
-                    u'type': u'flarp'
+                'field2': {
+                    'type': 'flarp'
                 },
-                u'field3': {
-                    u'keyword': u'banana'
+                'field3': {
+                    'keyword': 'banana'
                 }
             }
         }
@@ -30,26 +30,26 @@ class TestGetDatastoreFieldTypes(object):
             get_action=MagicMock(return_value=MagicMock(return_value=search_results))
         )
 
-        with patch(u'ckanext.graph.lib.utils.toolkit', mock_toolkit):
+        with patch('ckanext.graph.lib.utils.toolkit', mock_toolkit):
             field_types = get_datastore_field_types()
 
         assert len(field_types) == 3
-        assert field_types[u'field1'] == u'bert'
-        assert field_types[u'field2'] == u'flarp'
-        assert field_types[u'field3'] == u'keyword'
+        assert field_types['field1'] == 'bert'
+        assert field_types['field2'] == 'flarp'
+        assert field_types['field3'] == 'keyword'
 
     def test_using_fields(self):
         resource_id = MagicMock()
         search_results = {
-            u'fields': {
-                u'field1': {
-                    u'type': u'bert'
+            'fields': {
+                'field1': {
+                    'type': 'bert'
                 },
-                u'field2': {
-                    u'type': u'flarp'
+                'field2': {
+                    'type': 'flarp'
                 },
-                u'field3': {
-                    u'keyword': u'banana'
+                'field3': {
+                    'keyword': 'banana'
                 }
             }
         }
@@ -59,13 +59,13 @@ class TestGetDatastoreFieldTypes(object):
             get_action=MagicMock(return_value=MagicMock(return_value=search_results))
         )
 
-        with patch(u'ckanext.graph.lib.utils.toolkit', mock_toolkit):
+        with patch('ckanext.graph.lib.utils.toolkit', mock_toolkit):
             field_types = get_datastore_field_types()
 
         assert len(field_types) == 3
-        assert field_types[u'field1'] == u'bert'
-        assert field_types[u'field2'] == u'flarp'
-        assert field_types[u'field3'] == u'keyword'
+        assert field_types['field1'] == 'bert'
+        assert field_types['field2'] == 'flarp'
+        assert field_types['field3'] == 'keyword'
 
     def test_no_fields(self):
         resource_id = MagicMock()
@@ -76,7 +76,7 @@ class TestGetDatastoreFieldTypes(object):
             get_action=MagicMock(return_value=MagicMock(return_value=search_results))
         )
 
-        with patch(u'ckanext.graph.lib.utils.toolkit', mock_toolkit):
+        with patch('ckanext.graph.lib.utils.toolkit', mock_toolkit):
             field_types = get_datastore_field_types()
 
         assert len(field_types) == 0
@@ -85,42 +85,42 @@ class TestGetDatastoreFieldTypes(object):
 class TestGetRequestQuery(object):
 
     def test_simple(self, test_request_context):
-        with test_request_context(u'/?q=beans'):
-            assert get_request_query() == u'beans'
+        with test_request_context('/?q=beans'):
+            assert get_request_query() == 'beans'
 
     def test_missing(self, test_request_context):
-        with test_request_context(u'/?lemons=yes'):
-            assert get_request_query() == u''
+        with test_request_context('/?lemons=yes'):
+            assert get_request_query() == ''
 
 
 class TestGetRequestFilters(object):
 
     def test_missing(self, test_request_context):
-        with test_request_context(u'/?lemons=beans'):
+        with test_request_context('/?lemons=beans'):
             filters = get_request_filters()
         assert filters == {}
 
     def test_simple(self, test_request_context):
-        with test_request_context(u'/?filters=beans:4|lemons:yes|goats:always'):
+        with test_request_context('/?filters=beans:4|lemons:yes|goats:always'):
             filters = get_request_filters()
 
         assert len(filters) == 3
-        assert filters[u'beans'] == [u'4']
-        assert filters[u'lemons'] == [u'yes']
-        assert filters[u'goats'] == [u'always']
+        assert filters['beans'] == ['4']
+        assert filters['lemons'] == ['yes']
+        assert filters['goats'] == ['always']
 
     def test_multiples(self, test_request_context):
-        with test_request_context(u'/?filters=beans:4|goats:yes|beans:some'):
+        with test_request_context('/?filters=beans:4|goats:yes|beans:some'):
             filters = get_request_filters()
 
         assert len(filters) == 2
-        assert filters[u'beans'] == [u'4', u'some']
-        assert filters[u'goats'] == [u'yes']
+        assert filters['beans'] == ['4', 'some']
+        assert filters['goats'] == ['yes']
 
     def test_colon(self, test_request_context):
-        with test_request_context(u'/?filters=beans:4:4:2|goats:yes'):
+        with test_request_context('/?filters=beans:4:4:2|goats:yes'):
             filters = get_request_filters()
 
         assert len(filters) == 2
-        assert filters[u'beans'] == [u'4:4:2']
-        assert filters[u'goats'] == [u'yes']
+        assert filters['beans'] == ['4:4:2']
+        assert filters['goats'] == ['yes']
