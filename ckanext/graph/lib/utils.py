@@ -3,8 +3,7 @@
 #
 # This file is part of ckanext-graph
 # Created by the Natural History Museum in London, UK
-
-import urllib
+from urllib.parse import unquote
 
 from ckan.plugins import toolkit
 
@@ -15,13 +14,13 @@ def get_datastore_field_types():
     :return: a dict of {field_name: field_type}
     '''
     data = {
-        u'resource_id': toolkit.c.resource[u'id'],
-        u'limit': 0,
-        }
-    results = toolkit.get_action(u'datastore_search')({}, data)
-    fields = results.get(u'raw_fields', results.get(u'fields', {}))
+        'resource_id': toolkit.c.resource['id'],
+        'limit': 0,
+    }
+    results = toolkit.get_action('datastore_search')({}, data)
+    fields = results.get('raw_fields', results.get('fields', {}))
 
-    return {k: v.get(u'type', u'keyword') for k, v in fields.items()}
+    return {k: v.get('type', 'keyword') for k, v in fields.items()}
 
 
 def get_request_filters():
@@ -30,9 +29,9 @@ def get_request_filters():
     :return: a dict of {field_name: [filter1,filter2,...]}
     '''
     filters = {}
-    for f in urllib.unquote(toolkit.request.params.get(u'filters', u'')).split(u'|'):
+    for f in unquote(toolkit.request.params.get('filters', '')).split('|'):
         if f:
-            (k, v) = f.split(u':', 1)
+            k, v = f.split(':', 1)
             if k not in filters:
                 filters[k] = []
             filters[k].append(v)
@@ -44,4 +43,4 @@ def get_request_query():
     Retrieve the q parameter from the URL and return unquoted.
     :return: string
     '''
-    return urllib.unquote(toolkit.request.params.get(u'q', u''))
+    return unquote(toolkit.request.params.get('q', ''))

@@ -5,9 +5,9 @@
 # Created by the Natural History Museum in London, UK
 
 from abc import abstractmethod, abstractproperty
-from ckanext.graph.lib import utils
 
 from ckan.plugins import toolkit
+from ckanext.graph.lib import utils
 
 
 class Query(object):
@@ -26,7 +26,7 @@ class Query(object):
         '''
         if date_field is not None:
             assert count_field is None
-        self.resource_id = toolkit.c.resource[u'id']
+        self.resource_id = toolkit.c.resource['id']
         self.filters = utils.get_request_filters()
         self.q = utils.get_request_query()
         self.date_field = date_field
@@ -72,11 +72,11 @@ class Query(object):
 
     @classmethod
     def new(cls, *args, **kwargs):
-        backend_type = toolkit.config.get(u'ckanext.graph.backend')
+        backend_type = toolkit.config.get('ckanext.graph.backend')
         queries = {
             'elasticsearch': ElasticSearchQuery,
             'sql': SqlQuery
-            }
+        }
         query_class = queries.get(backend_type, ElasticSearchQuery)
         return query_class(*args, **kwargs)
 
@@ -84,8 +84,8 @@ class Query(object):
 class ElasticSearchQuery(Query):
     def __init__(self, *args, **kwargs):
         super(ElasticSearchQuery, self).__init__(*args, **kwargs)
-        self._bucket_name = u'query_buckets'
-        self._aggregated_name = u'agg_buckets'
+        self._bucket_name = 'query_buckets'
+        self._aggregated_name = 'agg_buckets'
 
     def _nest(self, *query_stack):
         '''
@@ -99,7 +99,7 @@ class ElasticSearchQuery(Query):
         for i in query_stack[-2::-1]:
             nested = {
                 i: nested
-                }
+            }
         return nested
 
     @property
@@ -110,12 +110,12 @@ class ElasticSearchQuery(Query):
         :return: a dict of filter items
         '''
         if self._is_date_query:
-            filters = [self._nest(u'exists', u'field', u'data.{0}'.format(self.date_field))]
+            filters = [self._nest('exists', 'field', f'data.{self.date_field}')]
         else:
             filters = []
 
         if self.q is not None:
-            filters.append(self._nest(u'query_string', u'query', self.q))
+            filters.append(self._nest('query_string', 'query', self.q))
 
         def _make_filter_term(filter_field, filter_value):
             if isinstance(filter_value, list):
@@ -124,19 +124,19 @@ class ElasticSearchQuery(Query):
                 else:
                     terms = [_make_filter_term(filter_field, sub_value) for sub_value in
                              filter_value]
-                    return self._nest(u'bool', u'should', terms)
+                    return self._nest('bool', 'should', terms)
             else:
                 filter_dict = {
-                    u'data.{0}'.format(filter_field): filter_value
-                    }
+                    f'data.{filter_field}': filter_value
+                }
                 return {
-                    u'term': filter_dict
-                    }
+                    'term': filter_dict
+                }
 
         for f, v in self.filters.items():
             filters.append(_make_filter_term(f, v))
 
-        filter_stack = self._nest(u'filter', u'bool', u'must', filters)
+        filter_stack = self._nest('filter', 'bool', 'must', filters)
 
         return filter_stack
 
@@ -144,61 +144,59 @@ class ElasticSearchQuery(Query):
     def _date_query(self):
         field_type = utils.get_datastore_field_types()[self.date_field]
 
-        if field_type == u'date':
+        if field_type == 'date':
             histogram_options = {
-                u'field': u'data.{0}'.format(self.date_field)
-                }
+                'field': f'data.{self.date_field}'
+            }
         else:
-            script = u'''try {{
+            script = f'''try {{
               def parser = new SimpleDateFormat(\'yyyy-MM-dd\');
-              def dt = parser.parse(doc[\'data.{date_field}\'].value);
+              def dt = parser.parse(doc[\'data.{self.date_field}\'].value);
               return dt.getTime();
              }} catch (Exception e) {{
               return false;
-             }}'''.format(
-                date_field=self.date_field
-                )
+             }}'''
             histogram_options = {
-                u'script': script
-                }
+                'script': script
+            }
 
-        histogram_options[u'interval'] = self.date_interval
+        histogram_options['interval'] = self.date_interval
 
-        select_stack = self._nest(u'aggs', self._bucket_name, u'date_histogram', histogram_options)
+        select_stack = self._nest('aggs', self._bucket_name, 'date_histogram', histogram_options)
 
         select_stack.update(self._filter_stack)
 
-        query_stack = self._nest(u'aggs', self._aggregated_name, select_stack)
+        query_stack = self._nest('aggs', self._aggregated_name, select_stack)
 
         return query_stack
 
     @property
     def _count_query(self):
         agg_options = {
-            u'field': u'data.{0}'.format(self.count_field),
-            u'missing': toolkit._('Empty')
-            }
+            'field': f'data.{self.count_field}',
+            'missing': toolkit._('Empty')
+        }
 
-        query_stack = self._nest(u'aggs', self._bucket_name, u'terms', agg_options)
+        query_stack = self._nest('aggs', self._bucket_name, 'terms', agg_options)
 
         if len(self.filters) > 0 or self.q is not None:
             query_stack.update(self._filter_stack)
-            query_stack = self._nest(u'aggs', self._aggregated_name, query_stack)
+            query_stack = self._nest('aggs', self._aggregated_name, query_stack)
 
         return query_stack
 
     def run(self):
         data_dict = {
-            u'resource_id': self.resource_id,
-            u'search': self.query,
-            u'raw_result': True
-            }
+            'resource_id': self.resource_id,
+            'search': self.query,
+            'raw_result': True
+        }
         results = toolkit.get_action('datastore_search_raw')({}, data_dict)
-        aggs = results[u'aggregations']
+        aggs = results['aggregations']
         extra_nesting = self._is_date_query or len(self.filters) > 0 or self.q is not None
         buckets = (aggs[self._aggregated_name] if extra_nesting else aggs)[self._bucket_name][
-            u'buckets']
-        records = [(b[u'key'], b.get(u'doc_count', 0)) for b in buckets]
+            'buckets']
+        records = [(b['key'], b.get('doc_count', 0)) for b in buckets]
         return records
 
 

@@ -1,0 +1,23 @@
+main-js:
+  output: ckanext-graph/%(version)s_main.js
+  filters: rjsmin
+  extra:
+    preload:
+      - base/main
+      - base/ckan
+  contents:
+    - vendor/excanvas.js
+    - vendor/jquery.flot.js
+    - vendor/jquery.flot.categories.js
+    - vendor/jquery.flot.barnumbers.js
+    - vendor/jquery.flot.time.js
+    - vendor/jquery.flot.tickrotor.js
+    - scripts/modules/graph.js
+
+main-css:
+  output: ckanext-graph/%(version)s_main.css
+  filters: less
+  config:
+    LESS_BIN: ../../../../../node_modules/less/bin/lessc
+  contents:
+    - less/graph.less
