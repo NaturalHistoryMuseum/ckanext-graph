@@ -19,10 +19,10 @@ def is_boolean(value, context):
 
     if isinstance(value, bool):
         return value
-    elif (isinstance(value, str) or isinstance(value, unicode)) and value.lower() in [
+    elif isinstance(value, str) and value.lower() in [
         'true', 'yes', 't', 'y', '1']:
         return True
-    elif (isinstance(value, str) or isinstance(value, unicode)) and value.lower() in [
+    elif isinstance(value, str) and value.lower() in [
         'false', 'no', 'f', 'n', '0']:
         return False
     elif isinstance(value, type(toolkit.missing)):

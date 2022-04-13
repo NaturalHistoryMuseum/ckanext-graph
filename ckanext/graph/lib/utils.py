@@ -43,4 +43,5 @@ def get_request_query():
     Retrieve the q parameter from the URL and return unquoted.
     :return: string
     '''
-    return unquote(toolkit.request.params.get('q', ''))
+    q = unquote(toolkit.request.params.get('q', ''))
+    return q if q and q != '' else None
