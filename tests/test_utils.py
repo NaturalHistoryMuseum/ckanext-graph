@@ -90,7 +90,7 @@ class TestGetRequestQuery(object):
 
     def test_missing(self, test_request_context):
         with test_request_context('/?lemons=yes'):
-            assert get_request_query() == ''
+            assert get_request_query() is None
 
 
 class TestGetRequestFilters(object):
