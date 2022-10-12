@@ -2,7 +2,7 @@
 
 # ckanext-graph
 
-[![Travis](https://img.shields.io/travis/NaturalHistoryMuseum/ckanext-graph/master.svg?style=flat-square)](https://travis-ci.org/NaturalHistoryMuseum/ckanext-graph)
+[![Tests](https://github.com/NaturalHistoryMuseum/ckanext-graph/actions/workflows/main.yml/badge.svg)](https://github.com/NaturalHistoryMuseum/ckanext-graph/actions/workflows/main.yml)
 [![Coveralls](https://img.shields.io/coveralls/github/NaturalHistoryMuseum/ckanext-graph/master.svg?style=flat-square)](https://coveralls.io/github/NaturalHistoryMuseum/ckanext-graph)
 [![CKAN](https://img.shields.io/badge/ckan-2.9.1-orange.svg?style=flat-square)](https://github.com/ckan/ckan)
 
