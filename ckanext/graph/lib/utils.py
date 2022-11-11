@@ -9,10 +9,11 @@ from ckan.plugins import toolkit
 
 
 def get_datastore_field_types():
-    '''
+    """
     Get a dict of datastore field names and their types.
+
     :return: a dict of {field_name: field_type}
-    '''
+    """
     data = {
         'resource_id': toolkit.c.resource['id'],
         'limit': 0,
@@ -24,10 +25,11 @@ def get_datastore_field_types():
 
 
 def get_request_filters():
-    '''
+    """
     Retrieve filters from the URL parameters and return them as a dict.
+
     :return: a dict of {field_name: [filter1,filter2,...]}
-    '''
+    """
     filters = {}
     for f in unquote(toolkit.request.params.get('filters', '')).split('|'):
         if f:
@@ -39,9 +41,10 @@ def get_request_filters():
 
 
 def get_request_query():
-    '''
+    """
     Retrieve the q parameter from the URL and return unquoted.
+
     :return: string
-    '''
+    """
     q = unquote(toolkit.request.params.get('q', ''))
     return q if q and q != '' else None

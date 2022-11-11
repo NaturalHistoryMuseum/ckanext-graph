@@ -20,7 +20,7 @@
             }
         }
     };
-    
+
     function processOptions(plot, options) {
         var bw = options.series.bars.barWidth;
         var numbers = options.series.bars.numbers;
@@ -50,11 +50,11 @@
                 yAlign = series.bars.numbers.yAlign;
                 var shiftX = typeof xAlign == "number" ? function(x){ return x; } : xAlign;
                 var shiftY = typeof yAlign == "number" ? function(y){ return y; } : yAlign;
-    
+
                 axes = {
                     0 : 'x',
                     1 : 'y'
-                } 
+                }
                 hs = series.bars.numbers.horizontalShift;
                 for(var i = 0; i < points.length; i += ps){
                     barNumber = i + series.bars.numbers.horizontalShift
@@ -74,7 +74,7 @@
             }
         });
     }
-    
+
     function init(plot) {
         plot.hooks.processOptions.push(processOptions);
         plot.hooks.draw.push(draw);

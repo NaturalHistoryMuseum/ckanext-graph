@@ -1,7 +1,10 @@
 from unittest.mock import MagicMock, patch
 
-from ckanext.graph.lib.utils import get_datastore_field_types, get_request_query, \
-    get_request_filters
+from ckanext.graph.lib.utils import (
+    get_datastore_field_types,
+    get_request_query,
+    get_request_filters,
+)
 
 
 class TestGetDatastoreFieldTypes(object):
@@ -13,21 +16,15 @@ class TestGetDatastoreFieldTypes(object):
         resource_id = MagicMock()
         search_results = {
             'raw_fields': {
-                'field1': {
-                    'type': 'bert'
-                },
-                'field2': {
-                    'type': 'flarp'
-                },
-                'field3': {
-                    'keyword': 'banana'
-                }
+                'field1': {'type': 'bert'},
+                'field2': {'type': 'flarp'},
+                'field3': {'keyword': 'banana'},
             }
         }
 
         mock_toolkit = MagicMock(
             c=MagicMock(resource=dict(id=resource_id)),
-            get_action=MagicMock(return_value=MagicMock(return_value=search_results))
+            get_action=MagicMock(return_value=MagicMock(return_value=search_results)),
         )
 
         with patch('ckanext.graph.lib.utils.toolkit', mock_toolkit):
@@ -42,21 +39,15 @@ class TestGetDatastoreFieldTypes(object):
         resource_id = MagicMock()
         search_results = {
             'fields': {
-                'field1': {
-                    'type': 'bert'
-                },
-                'field2': {
-                    'type': 'flarp'
-                },
-                'field3': {
-                    'keyword': 'banana'
-                }
+                'field1': {'type': 'bert'},
+                'field2': {'type': 'flarp'},
+                'field3': {'keyword': 'banana'},
             }
         }
 
         mock_toolkit = MagicMock(
             c=MagicMock(resource=dict(id=resource_id)),
-            get_action=MagicMock(return_value=MagicMock(return_value=search_results))
+            get_action=MagicMock(return_value=MagicMock(return_value=search_results)),
         )
 
         with patch('ckanext.graph.lib.utils.toolkit', mock_toolkit):
@@ -73,7 +64,7 @@ class TestGetDatastoreFieldTypes(object):
 
         mock_toolkit = MagicMock(
             c=MagicMock(resource=dict(id=resource_id)),
-            get_action=MagicMock(return_value=MagicMock(return_value=search_results))
+            get_action=MagicMock(return_value=MagicMock(return_value=search_results)),
         )
 
         with patch('ckanext.graph.lib.utils.toolkit', mock_toolkit):
@@ -83,7 +74,6 @@ class TestGetDatastoreFieldTypes(object):
 
 
 class TestGetRequestQuery(object):
-
     def test_simple(self, test_request_context):
         with test_request_context('/?q=beans'):
             assert get_request_query() == 'beans'
@@ -94,7 +84,6 @@ class TestGetRequestQuery(object):
 
 
 class TestGetRequestFilters(object):
-
     def test_missing(self, test_request_context):
         with test_request_context('/?lemons=beans'):
             filters = get_request_filters()
