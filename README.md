@@ -2,9 +2,11 @@
 
 # ckanext-graph
 
-[![Tests](https://github.com/NaturalHistoryMuseum/ckanext-graph/actions/workflows/main.yml/badge.svg)](https://github.com/NaturalHistoryMuseum/ckanext-graph/actions/workflows/main.yml)
-[![Coveralls](https://img.shields.io/coveralls/github/NaturalHistoryMuseum/ckanext-graph/master.svg?style=flat-square)](https://coveralls.io/github/NaturalHistoryMuseum/ckanext-graph)
+[![Tests](https://img.shields.io/github/workflow/status/NaturalHistoryMuseum/ckanext-graph/Tests?style=flat-square)](https://github.com/NaturalHistoryMuseum/ckanext-graph/actions/workflows/main.yml)
+[![Coveralls](https://img.shields.io/coveralls/github/NaturalHistoryMuseum/ckanext-graph/main?style=flat-square)](https://coveralls.io/github/NaturalHistoryMuseum/ckanext-graph)
 [![CKAN](https://img.shields.io/badge/ckan-2.9.1-orange.svg?style=flat-square)](https://github.com/ckan/ckan)
+[![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue.svg?style=flat-square)](https://www.python.org/)
+[![Docs](https://img.shields.io/readthedocs/ckanext-graph?style=flat-square)](https://ckanext-graph.readthedocs.io)
 
 _A CKAN extension that adds a graph view for resources._
 
@@ -58,7 +60,7 @@ Path variables used below:
 
 # Configuration
 
-There is currently only one option that can be specified in your .ini config file.
+These are the options that can be specified in your .ini config file.
 
 Name|Description|Options|Default
 --|--|--|--
@@ -106,12 +108,10 @@ If you do this, please submit a pull request! Contributions are always welcome.
 
 
 # Testing
-_Test coverage is currently extremely limited._
 
-To run the tests in this extension, there is a Docker compose configuration available in this
-repository to make it easy.
+There is a Docker compose configuration available in this repository to make it easier to run tests.
 
-To run the tests against ckan 2.9.x on Python2:
+To run the tests against ckan 2.9.x on Python3:
 
 1. Build the required images
 ```bash
@@ -126,4 +126,4 @@ docker-compose build
 docker-compose run ckan
 ```
 
-The ckan image uses the Dockerfile in the `docker/` folder which is based on `openknowledge/ckan-dev:2.9-py2`.
+The ckan image uses the Dockerfile in the `docker/` folder.
