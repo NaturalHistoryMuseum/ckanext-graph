@@ -1,3 +1,4 @@
+<!--header-start-->
 <img src=".github/nhm-logo.svg" align="left" width="150px" height="100px" hspace="40"/>
 
 # ckanext-graph
@@ -10,17 +11,21 @@
 
 _A CKAN extension that adds a graph view for resources._
 
+<!--header-end-->
 
 # Overview
 
+<!--overview-start-->
 Adds graph views for resources on a CKAN instance. Two types of graph are available: temporal (a line graph showing count over time based on a specified date field), and categorical (a bar chart showing counts for various values in a specified field).
 
 
 **NB**: the current version of this extension only works with the Natural History Museum's [ElasticSearch datastore CKAN backend](https://github.com/NaturalHistoryMuseum/ckanext-versioned-datastore). _However_, it is designed to be extensible, so if you would like to use this extension with a different backend (e.g. the standard PostgreSQL datastore), please see the [Extending](#extending) section.
 
+<!--overview-end-->
 
 # Installation
 
+<!--installation-start-->
 Path variables used below:
 - `$INSTALL_FOLDER` (i.e. where CKAN is installed), e.g. `/usr/lib/ckan/default`
 - `$CONFIG_FILE`, e.g. `/etc/ckan/default/development.ini`
@@ -58,17 +63,22 @@ Path variables used below:
   ckan.plugins = ... graph
   ```
 
+<!--installation-end-->
+
 # Configuration
 
+<!--configuration-start-->
 These are the options that can be specified in your .ini config file.
 
 Name|Description|Options|Default
 --|--|--|--
 `ckanext.graph.backend`|The name of the backend to use (currently only `elasticsearch` is implemented)|elasticsearch, sql|elasticsearch
 
+<!--configuration-end-->
 
 # Usage
 
+<!--usage-start-->
 ## Templates
 
 The view will be added as an option with no further configuration necessary. However, if you wish to override or add content to the template, you can extend `templates/graph/view.html`:
@@ -106,9 +116,11 @@ If you add a new class, you'll have to add it to the dictionary in `Query.new()`
 
 If you do this, please submit a pull request! Contributions are always welcome.
 
+<!--usage-end-->
 
 # Testing
 
+<!--testing-start-->
 There is a Docker compose configuration available in this repository to make it easier to run tests.
 
 To run the tests against ckan 2.9.x on Python3:
@@ -127,3 +139,5 @@ docker-compose run ckan
 ```
 
 The ckan image uses the Dockerfile in the `docker/` folder.
+
+<!--testing-end-->
