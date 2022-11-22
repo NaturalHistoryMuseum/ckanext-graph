@@ -11,8 +11,7 @@ from ckanext.graph.lib import utils
 from ckanext.graph.logic.validators import in_list, is_boolean, is_date_castable
 
 import ckanext.datastore.interfaces as datastore_interfaces
-from ckan.plugins import (SingletonPlugin, implements, interfaces,
-                          toolkit)
+from ckan.plugins import SingletonPlugin, implements, interfaces, toolkit
 
 not_empty = toolkit.get_validator('not_empty')
 ignore_empty = toolkit.get_validator('ignore_empty')
@@ -25,7 +24,10 @@ TEMPORAL_FIELD_TYPES = ['date']
 
 
 class GraphPlugin(SingletonPlugin):
-    '''Graph plugin'''
+    """
+    Graph plugin.
+    """
+
     implements(interfaces.IConfigurer)
     implements(interfaces.IResourceView, inherit=True)
     implements(datastore_interfaces.IDatastore, inherit=True)
@@ -33,24 +35,29 @@ class GraphPlugin(SingletonPlugin):
 
     ## IConfigurer
     def update_config(self, config):
-        '''Add our template directories to the list of available templates
+        """
+        Add our template directories to the list of available templates.
 
         :param config:
-
-        '''
+        """
         toolkit.add_template_directory(config, 'theme/templates')
         toolkit.add_resource('theme/assets', 'ckanext-graph')
 
     ## IResourceView
     def info(self):
-        ''' '''
+        """
+        
+        """
         return {
             'name': 'graph',
             'title': 'Graph',
             'schema': {
                 'show_date': [is_boolean],
-                'date_field': [ignore_empty, is_date_castable,
-                               in_list(self.datastore_field_names)],
+                'date_field': [
+                    ignore_empty,
+                    is_date_castable,
+                    in_list(self.datastore_field_names),
+                ],
                 'date_interval': [not_empty, in_list(DATE_INTERVALS)],
                 'show_count': [is_boolean],
                 'count_field': [ignore_empty, in_list(self.datastore_field_names)],
@@ -60,7 +67,7 @@ class GraphPlugin(SingletonPlugin):
             'iframed': False,
             'filterable': True,
             'preview_enabled': False,
-            'full_page_edit': False
+            'full_page_edit': False,
         }
 
     # IDatastore
@@ -104,57 +111,56 @@ class GraphPlugin(SingletonPlugin):
         return 'graph/form.html'
 
     def can_view(self, data_dict):
-        '''Specify which resources can be viewed by this plugin
+        """
+        Specify which resources can be viewed by this plugin.
 
         :param data_dict:
-
-        '''
+        """
         # Check that we have a datastore for this resource
         if data_dict['resource'].get('datastore_active'):
             return True
         return False
 
     def setup_template_variables(self, context, data_dict):
-        '''Setup variables available to templates
+        """
+        Setup variables available to templates.
 
         :param context:
         :param data_dict:
-
-        '''
+        """
 
         datastore_fields = utils.get_datastore_field_types()
         self.datastore_field_names = datastore_fields.keys()
 
-        dropdown_options_count = [{
-            'value': field_name,
-            'text': field_name
-        } for field_name, field_type in
-            datastore_fields.items()]
+        dropdown_options_count = [
+            {'value': field_name, 'text': field_name}
+            for field_name, field_type in datastore_fields.items()
+        ]
 
-        dropdown_options_date = [{
-            'value': field_name,
-            'text': field_name
-        } for field_name, field_type in
-            datastore_fields.items() if
-            field_type in TEMPORAL_FIELD_TYPES or 'date' in field_name.lower() or 'time' in
-            field_name.lower()]
+        dropdown_options_date = [
+            {'value': field_name, 'text': field_name}
+            for field_name, field_type in datastore_fields.items()
+            if field_type in TEMPORAL_FIELD_TYPES
+            or 'date' in field_name.lower()
+            or 'time' in field_name.lower()
+        ]
 
         vars = {
-            'count_field_options': [None] + sorted(dropdown_options_count,
-                                                   key=lambda x: x['text']),
-            'date_field_options': [None] + sorted(dropdown_options_date,
-                                                  key=lambda x: x['text']),
-            'date_interval_options': [{
-                'value': interval,
-                'text': interval
-            } for interval in DATE_INTERVALS],
+            'count_field_options': [None]
+            + sorted(dropdown_options_count, key=lambda x: x['text']),
+            'date_field_options': [None]
+            + sorted(dropdown_options_date, key=lambda x: x['text']),
+            'date_interval_options': [
+                {'value': interval, 'text': interval} for interval in DATE_INTERVALS
+            ],
             'defaults': {},
             'graphs': [],
-            'resource': data_dict['resource']
+            'resource': data_dict['resource'],
         }
 
-        if data_dict['resource_view'].get('show_count', None) and data_dict['resource_view'].get(
-            'count_field', None):
+        if data_dict['resource_view'].get('show_count', None) and data_dict[
+            'resource_view'
+        ].get('count_field', None):
 
             count_field = data_dict['resource_view'].get('count_field')
 
@@ -164,20 +170,16 @@ class GraphPlugin(SingletonPlugin):
 
             if records:
                 count_dict = {
-                    'title': data_dict['resource_view'].get('count_label',
-                                                            None) or count_field,
+                    'title': data_dict['resource_view'].get('count_label', None)
+                    or count_field,
                     'data': [],
                     'options': {
-                        'bars': {
-                            'show': True,
-                            'barWidth': 0.6,
-                            'align': 'center'
-                        },
+                        'bars': {'show': True, 'barWidth': 0.6, 'align': 'center'},
                         'xaxis': {
                             'ticks': [],
                             'rotateTicks': 60,
-                        }
-                    }
+                        },
+                    },
                 }
 
                 for i, record in enumerate(records):
@@ -188,8 +190,10 @@ class GraphPlugin(SingletonPlugin):
                 vars['graphs'].append(count_dict)
 
         # Do we want a date statistics graph
-        if data_dict['resource_view'].get('show_date', False) and data_dict[
-            'resource_view'].get('date_field', None) is not None:
+        if (
+            data_dict['resource_view'].get('show_date', False)
+            and data_dict['resource_view'].get('date_field', None) is not None
+        ):
 
             date_interval = data_dict['resource_view'].get('date_interval')
             date_field = data_dict['resource_view'].get('date_field')
@@ -201,33 +205,18 @@ class GraphPlugin(SingletonPlugin):
             if records:
 
                 default_options = {
-                    'grid': {
-                        'hoverable': True,
-                        'clickable': True
-                    },
-                    'xaxis': {
-                        'mode': 'time'
-                    },
-                    'yaxis': {
-                        'tickDecimals': 0
-                    }
+                    'grid': {'hoverable': True, 'clickable': True},
+                    'xaxis': {'mode': 'time'},
+                    'yaxis': {'tickDecimals': 0},
                 }
 
                 total_dict = {
                     'title': 'Total records',
                     'data': [],
                     'options': {
-                        'series': {
-                            'lines': {
-                                'show': True
-                            },
-                            'points': {
-                                'show': True
-                            }
-                        },
-                        '_date_interval': date_interval
+                        'series': {'lines': {'show': True}, 'points': {'show': True}},
+                        '_date_interval': date_interval,
                     },
-
                 }
 
                 count_dict = {
@@ -235,13 +224,9 @@ class GraphPlugin(SingletonPlugin):
                     'data': [],
                     'options': {
                         'series': {
-                            'bars': {
-                                'show': True,
-                                'barWidth': 0.6,
-                                'align': 'center'
-                            }
+                            'bars': {'show': True, 'barWidth': 0.6, 'align': 'center'}
                         }
-                    }
+                    },
                 }
 
                 total_dict['options'].update(default_options)

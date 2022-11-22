@@ -10,36 +10,36 @@ from sqlalchemy.exc import DataError
 
 
 def is_boolean(value, context):
-    '''
-    Validate a field as a boolean. Assuming missing value means false
+    """
+    Validate a field as a boolean. Assuming missing value means false.
 
     :param value:
     :param context:
-    '''
+    """
 
     if isinstance(value, bool):
         return value
-    elif isinstance(value, str) and value.lower() in [
-        'true', 'yes', 't', 'y', '1']:
+    elif isinstance(value, str) and value.lower() in ['true', 'yes', 't', 'y', '1']:
         return True
-    elif isinstance(value, str) and value.lower() in [
-        'false', 'no', 'f', 'n', '0']:
+    elif isinstance(value, str) and value.lower() in ['false', 'no', 'f', 'n', '0']:
         return False
     elif isinstance(value, type(toolkit.missing)):
         return False
     else:
         raise toolkit.Invalid(
-            toolkit._('Value must a true/false value (ie. true/yes/t/y/1 or false/no/f/n/0)'))
+            toolkit._(
+                'Value must a true/false value (ie. true/yes/t/y/1 or false/no/f/n/0)'
+            )
+        )
 
 
 def in_list(list_possible_values):
-    '''
-    Validator that checks that the input value is one of the given
-    possible values.
+    """
+    Validator that checks that the input value is one of the given possible values.
 
     :param list_possible_values: function that returns list of possible values
                                  for validated field
-    '''
+    """
 
     def validate(key, data, errors, context):
         '''
@@ -57,12 +57,12 @@ def in_list(list_possible_values):
 
 
 def is_date_castable(value, context):
-    '''
-    Validator to ensure the date is castable to a date field
+    """
+    Validator to ensure the date is castable to a date field.
 
     :param value:
     :param context:
-    '''
+    """
 
     if value:
         fields = utils.get_datastore_field_types()
@@ -83,27 +83,22 @@ def is_date_castable(value, context):
             }} else {{
              return false;
             }}
-            '''.format(date_field_name=value)
+            '''.format(
+                date_field_name=value
+            )
 
             data_dict = {
                 'search': {
                     'query': {
-                        'bool': {
-                            'filter': {
-                                'script': {
-                                    'script': {
-                                        'source': script
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                'resource_id': toolkit.c.resource['id']
-                }
+                        'bool': {'filter': {'script': {'script': {'source': script}}}}
+                    }
+                },
+                'resource_id': toolkit.c.resource['id'],
+            }
 
             failure = toolkit.Invalid(
-                f'Field {value} cannot be cast into a date. Are you sure it\'s a date field?')
+                f'Field {value} cannot be cast into a date. Are you sure it\'s a date field?'
+            )
 
             try:
                 result = toolkit.get_action('datastore_search_raw')({}, data_dict)
