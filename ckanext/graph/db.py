@@ -11,19 +11,21 @@ from ckanext.graph.lib import utils
 
 
 class Query(object):
-    '''
-    A base class for retrieving stats from the datastore. Subclass to implement different backend
-    retrieval methods.
-    '''
+    """
+    A base class for retrieving stats from the datastore.
 
-    def __init__(self, date_field=None, date_interval=None,
-                 count_field=None):
-        '''
-        Construct a new Query object. Use EITHER date args OR count args. Using both will fail.
+    Subclass to implement different backend retrieval methods.
+    """
+
+    def __init__(self, date_field=None, date_interval=None, count_field=None):
+        """
+        Construct a new Query object. Use EITHER date args OR count args. Using both
+        will fail.
+
         :param date_field: the name of the field to use for dates
         :param date_interval: the length of time between date groupings, e.g. day, month
         :param count_field: the name of the field to use for categories
-        '''
+        """
         if date_field is not None:
             assert count_field is None
         self.resource_id = toolkit.c.resource['id']
@@ -36,10 +38,11 @@ class Query(object):
 
     @property
     def query(self):
-        '''
+        """
         Returns the appropriate query text to send to the datastore backend.
+
         :return: the date query or count query
-        '''
+        """
         if self._is_date_query:
             return self._date_query
         else:
@@ -47,36 +50,37 @@ class Query(object):
 
     @abstractproperty
     def _date_query(self):
-        '''
-        A query for retrieving results grouped by the date in date_field (in chronological order,
-        where the interval is date_interval).
+        """
+        A query for retrieving results grouped by the date in date_field (in
+        chronological order, where the interval is date_interval).
+
         :return: a query ready to submit to the backend
-        '''
+        """
         return ''
 
     @abstractproperty
     def _count_query(self):
-        '''
+        """
         A query for retrieving results grouped by the categories in count_field.
+
         :return: a query ready to submit to the backend
-        '''
+        """
         return ''
 
     @abstractmethod
     def run(self):
-        '''
-        Submits the query to the backend and processes the results into the format [(key, count)].
+        """
+        Submits the query to the backend and processes the results into the format
+        [(key, count)].
+
         :return: a list of (key,count) tuples
-        '''
+        """
         pass
 
     @classmethod
     def new(cls, *args, **kwargs):
         backend_type = toolkit.config.get('ckanext.graph.backend')
-        queries = {
-            'elasticsearch': ElasticSearchQuery,
-            'sql': SqlQuery
-        }
+        queries = {'elasticsearch': ElasticSearchQuery, 'sql': SqlQuery}
         query_class = queries.get(backend_type, ElasticSearchQuery)
         return query_class(*args, **kwargs)
 
@@ -88,27 +92,27 @@ class ElasticSearchQuery(Query):
         self._aggregated_name = 'agg_buckets'
 
     def _nest(self, *query_stack):
-        '''
-        Helper method for nesting multiple dicts inside each other (nested stacks can get quite
-        deep in elastic search queries).
+        """
+        Helper method for nesting multiple dicts inside each other (nested stacks can
+        get quite deep in elastic search queries).
+
         :param query_stack: the items to nest, in descending order (i.e. the first item will be
                             the outermost key)
         :return: a dict of nested items
-        '''
+        """
         nested = query_stack[-1]
         for i in query_stack[-2::-1]:
-            nested = {
-                i: nested
-            }
+            nested = {i: nested}
         return nested
 
     @property
     def _filter_stack(self):
-        '''
-        Create the subquery for filtering records (mostly from URL parameters, but date graphs
-        also require that the date field is not null).
+        """
+        Create the subquery for filtering records (mostly from URL parameters, but date
+        graphs also require that the date field is not null).
+
         :return: a dict of filter items
-        '''
+        """
         if self._is_date_query:
             filters = [self._nest('exists', 'field', f'data.{self.date_field}')]
         else:
@@ -122,16 +126,14 @@ class ElasticSearchQuery(Query):
                 if len(filter_value) == 1:
                     return _make_filter_term(filter_field, filter_value[0])
                 else:
-                    terms = [_make_filter_term(filter_field, sub_value) for sub_value in
-                             filter_value]
+                    terms = [
+                        _make_filter_term(filter_field, sub_value)
+                        for sub_value in filter_value
+                    ]
                     return self._nest('bool', 'should', terms)
             else:
-                filter_dict = {
-                    f'data.{filter_field}': filter_value
-                }
-                return {
-                    'term': filter_dict
-                }
+                filter_dict = {f'data.{filter_field}': filter_value}
+                return {'term': filter_dict}
 
         for f, v in self.filters.items():
             filters.append(_make_filter_term(f, v))
@@ -145,9 +147,7 @@ class ElasticSearchQuery(Query):
         field_type = utils.get_datastore_field_types()[self.date_field]
 
         if field_type == 'date':
-            histogram_options = {
-                'field': f'data.{self.date_field}'
-            }
+            histogram_options = {'field': f'data.{self.date_field}'}
         else:
             script = f'''try {{
               def parser = new SimpleDateFormat(\'yyyy-MM-dd\');
@@ -156,13 +156,13 @@ class ElasticSearchQuery(Query):
              }} catch (Exception e) {{
               return false;
              }}'''
-            histogram_options = {
-                'script': script
-            }
+            histogram_options = {'script': script}
 
         histogram_options['interval'] = self.date_interval
 
-        select_stack = self._nest('aggs', self._bucket_name, 'date_histogram', histogram_options)
+        select_stack = self._nest(
+            'aggs', self._bucket_name, 'date_histogram', histogram_options
+        )
 
         select_stack.update(self._filter_stack)
 
@@ -174,7 +174,7 @@ class ElasticSearchQuery(Query):
     def _count_query(self):
         agg_options = {
             'field': f'data.{self.count_field}',
-            'missing': toolkit._('Empty')
+            'missing': toolkit._('Empty'),
         }
 
         query_stack = self._nest('aggs', self._bucket_name, 'terms', agg_options)
@@ -189,13 +189,16 @@ class ElasticSearchQuery(Query):
         data_dict = {
             'resource_id': self.resource_id,
             'search': self.query,
-            'raw_result': True
+            'raw_result': True,
         }
         results = toolkit.get_action('datastore_search_raw')({}, data_dict)
         aggs = results['aggregations']
-        extra_nesting = self._is_date_query or len(self.filters) > 0 or self.q is not None
-        buckets = (aggs[self._aggregated_name] if extra_nesting else aggs)[self._bucket_name][
-            'buckets']
+        extra_nesting = (
+            self._is_date_query or len(self.filters) > 0 or self.q is not None
+        )
+        buckets = (aggs[self._aggregated_name] if extra_nesting else aggs)[
+            self._bucket_name
+        ]['buckets']
         records = [(b['key'], b.get('doc_count', 0)) for b in buckets]
         return records
 

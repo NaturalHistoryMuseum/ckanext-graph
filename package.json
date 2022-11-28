@@ -1,18 +1,18 @@
 {
   "name": "ckanext-graph",
-  "version": "0.0.1",
-  "description": "Natural History Museum CKAN Graph Plugin",
+  "version": "2.0.1",
+  "description": "A CKAN extension that adds a graph view for resources.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NaturalHistoryMuseum/ckanext-graph.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/NaturalHistoryMuseum/ckanext-graph/issues"
   },
-  "homepage": "https://data.nhm.ac.uk",
+  "homepage": "https://github.com/NaturalHistoryMuseum/ckanext-graph",
   "dependencies": {
-    "less": "^3.12.2"
+    "less": "^4.1.3"
   }
 }
