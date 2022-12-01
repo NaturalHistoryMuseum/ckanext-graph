@@ -72,9 +72,9 @@ Installing from a `pyproject.toml` in editable mode (i.e. `pip install -e`) requ
 <!--configuration-start-->
 These are the options that can be specified in your .ini config file.
 
-Name|Description|Options|Default
---|--|--|--
-`ckanext.graph.backend`|The name of the backend to use (currently only `elasticsearch` is implemented)|elasticsearch, sql|elasticsearch
+| Name                    | Description                                                                    | Options            | Default       |
+|-------------------------|--------------------------------------------------------------------------------|--------------------|---------------|
+| `ckanext.graph.backend` | The name of the backend to use (currently only `elasticsearch` is implemented) | elasticsearch, sql | elasticsearch |
 
 <!--configuration-end-->
 
