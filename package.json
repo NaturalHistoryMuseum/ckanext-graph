@@ -1,6 +1,6 @@
 {
   "name": "ckanext-graph",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A CKAN extension that adds a graph view for resources.",
   "repository": {
     "type": "git",
