@@ -51,8 +51,7 @@ zip-safe = false
 exclude = ["tests", "docs"]
 
 [tool.setuptools.package-data]
-"ckanext.graph" = ["package.json"]
-"ckanext.graph.theme" = ["**/*"]
+"ckanext.graph.theme" = ["*", "**/*"]
 
 [tool.commitizen]
 name = "cz_nhm"
@@ -61,7 +60,6 @@ tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_incremental = true
 version_files = [
-    "package.json",
     "pyproject.toml:version"
 ]
 

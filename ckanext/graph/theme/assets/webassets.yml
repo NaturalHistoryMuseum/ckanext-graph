@@ -17,7 +17,5 @@ main-js:
 main-css:
   output: ckanext-graph/%(version)s_main.css
   filters: less
-  config:
-    LESS_BIN: ../../../../../node_modules/less/bin/lessc
   contents:
     - less/graph.less
