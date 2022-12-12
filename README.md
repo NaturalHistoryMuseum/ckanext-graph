@@ -65,6 +65,11 @@ Installing from a `pyproject.toml` in editable mode (i.e. `pip install -e`) requ
    ckan.plugins = ... graph
    ```
 
+2. Install `lessc` globally:
+   ```shell
+   npm install -g "less@~4.1"
+   ```
+
 <!--installation-end-->
 
 # Configuration
