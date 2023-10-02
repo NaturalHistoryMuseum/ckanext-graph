@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: CKAN Graph extension
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: Natural History Museum
+    city: London
+    country: GB
+    alias: NHM
+    email: data@nhm.ac.uk
+repository-code: 'https://github.com/NaturalHistoryMuseum/ckanext-graph'
+abstract: A CKAN extension that adds a graph view for resources.
+keywords:
+  - ckan
+  - ckanext
+  - graph
+license: GPL-3.0-or-later
+version: 2.1.8
