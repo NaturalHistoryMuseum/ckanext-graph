@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.1.9 (2024-08-20)
+
+### Chores/Misc
+
+- add build section to read the docs config
+- add regex for version line in citation file
+- add citation.cff to list of files with version
+- add contributing guidelines
+- add code of conduct
+- add citation file
+- update support.md links
+
 ## v2.1.8 (2023-07-17)
 
 ### Docs
