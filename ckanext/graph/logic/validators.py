@@ -5,8 +5,9 @@
 # Created by the Natural History Museum in London, UK
 
 from ckan.plugins import toolkit
-from ckanext.graph.lib import utils
 from sqlalchemy.exc import DataError
+
+from ckanext.graph.lib import utils
 
 
 def is_boolean(value, context):
@@ -37,19 +38,11 @@ def in_list(list_possible_values):
     """
     Validator that checks that the input value is one of the given possible values.
 
-    :param list_possible_values: function that returns list of possible values
-                                 for validated field
+    :param list_possible_values: function that returns list of possible values for
+        validated field
     """
 
     def validate(key, data, errors, context):
-        '''
-
-        :param key:
-        :param data:
-        :param errors:
-        :param context:
-
-        '''
         if not data[key] in list_possible_values:
             raise toolkit.Invalid(f'"{data[key]}" is not a valid parameter')
 
@@ -72,7 +65,7 @@ def is_date_castable(value, context):
         if field_type == 'date':
             return value
         else:
-            script = '''
+            script = """
             if (doc['data.{date_field_name}'].value != null) {{
              try {{
               new SimpleDateFormat('yyyy-MM-dd').parse(doc['data.{date_field_name}'].value);
@@ -83,9 +76,7 @@ def is_date_castable(value, context):
             }} else {{
              return false;
             }}
-            '''.format(
-                date_field_name=value
-            )
+            """.format(date_field_name=value)
 
             data_dict = {
                 'search': {
@@ -97,7 +88,7 @@ def is_date_castable(value, context):
             }
 
             failure = toolkit.Invalid(
-                f'Field {value} cannot be cast into a date. Are you sure it\'s a date field?'
+                f"Field {value} cannot be cast into a date. Are you sure it's a date field?"
             )
 
             try:

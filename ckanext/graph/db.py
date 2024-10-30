@@ -7,6 +7,7 @@
 from abc import abstractmethod, abstractproperty
 
 from ckan.plugins import toolkit
+
 from ckanext.graph.lib import utils
 
 
@@ -96,8 +97,8 @@ class ElasticSearchQuery(Query):
         Helper method for nesting multiple dicts inside each other (nested stacks can
         get quite deep in elastic search queries).
 
-        :param query_stack: the items to nest, in descending order (i.e. the first item will be
-                            the outermost key)
+        :param query_stack: the items to nest, in descending order (i.e. the first item
+            will be the outermost key)
         :return: a dict of nested items
         """
         nested = query_stack[-1]
@@ -149,13 +150,13 @@ class ElasticSearchQuery(Query):
         if field_type == 'date':
             histogram_options = {'field': f'data.{self.date_field}'}
         else:
-            script = f'''try {{
+            script = f"""try {{
               def parser = new SimpleDateFormat(\'yyyy-MM-dd\');
               def dt = parser.parse(doc[\'data.{self.date_field}\'].value);
               return dt.getTime();
              }} catch (Exception e) {{
               return false;
-             }}'''
+             }}"""
             histogram_options = {'script': script}
 
         histogram_options['interval'] = self.date_interval

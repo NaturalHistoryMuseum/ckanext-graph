@@ -6,12 +6,12 @@
 
 import logging
 
+from ckan.plugins import SingletonPlugin, implements, interfaces, toolkit
+
+import ckanext.datastore.interfaces as datastore_interfaces
 from ckanext.graph.db import Query
 from ckanext.graph.lib import utils
 from ckanext.graph.logic.validators import in_list, is_boolean, is_date_castable
-
-import ckanext.datastore.interfaces as datastore_interfaces
-from ckan.plugins import SingletonPlugin, implements, interfaces, toolkit
 
 not_empty = toolkit.get_validator('not_empty')
 ignore_empty = toolkit.get_validator('ignore_empty')
@@ -45,9 +45,6 @@ class GraphPlugin(SingletonPlugin):
 
     ## IResourceView
     def info(self):
-        """
-        
-        """
         return {
             'name': 'graph',
             'title': 'Graph',
@@ -72,42 +69,15 @@ class GraphPlugin(SingletonPlugin):
 
     # IDatastore
     def datastore_search(self, context, data_dict, all_field_ids, query_dict):
-        '''
-
-        :param context:
-        :param data_dict:
-        :param all_field_ids:
-        :param query_dict:
-
-        '''
         return query_dict
 
     def datastore_validate(self, context, data_dict, all_field_ids):
-        '''
-
-        :param context:
-        :param data_dict:
-        :param all_field_ids:
-
-        '''
         return data_dict
 
     def view_template(self, context, data_dict):
-        '''
-
-        :param context:
-        :param data_dict:
-
-        '''
         return 'graph/view.html'
 
     def form_template(self, context, data_dict):
-        '''
-
-        :param context:
-        :param data_dict:
-
-        '''
         return 'graph/form.html'
 
     def can_view(self, data_dict):
@@ -161,7 +131,6 @@ class GraphPlugin(SingletonPlugin):
         if data_dict['resource_view'].get('show_count', None) and data_dict[
             'resource_view'
         ].get('count_field', None):
-
             count_field = data_dict['resource_view'].get('count_field')
 
             count_query = Query.new(count_field=count_field)
@@ -194,7 +163,6 @@ class GraphPlugin(SingletonPlugin):
             data_dict['resource_view'].get('show_date', False)
             and data_dict['resource_view'].get('date_field', None) is not None
         ):
-
             date_interval = data_dict['resource_view'].get('date_interval')
             date_field = data_dict['resource_view'].get('date_field')
 
@@ -203,7 +171,6 @@ class GraphPlugin(SingletonPlugin):
             records = date_query.run()
 
             if records:
-
                 default_options = {
                     'grid': {'hoverable': True, 'clickable': True},
                     'xaxis': {'mode': 'time'},
