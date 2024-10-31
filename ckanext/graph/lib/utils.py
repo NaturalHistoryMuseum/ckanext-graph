@@ -12,7 +12,7 @@ def get_datastore_field_types():
     """
     Get a dict of datastore field names and their types.
 
-    :return: a dict of {field_name: field_type}
+    :returns: a dict of {field_name: field_type}
     """
     data = {
         'resource_id': toolkit.c.resource['id'],
@@ -28,7 +28,7 @@ def get_request_filters():
     """
     Retrieve filters from the URL parameters and return them as a dict.
 
-    :return: a dict of {field_name: [filter1,filter2,...]}
+    :returns: a dict of {field_name: [filter1,filter2,...]}
     """
     filters = {}
     for f in unquote(toolkit.request.params.get('filters', '')).split('|'):
@@ -44,7 +44,7 @@ def get_request_query():
     """
     Retrieve the q parameter from the URL and return unquoted.
 
-    :return: string
+    :returns: string
     """
     q = unquote(toolkit.request.params.get('q', ''))
     return q if q and q != '' else None
