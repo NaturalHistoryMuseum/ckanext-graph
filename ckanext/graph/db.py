@@ -42,7 +42,7 @@ class Query(object):
         """
         Returns the appropriate query text to send to the datastore backend.
 
-        :return: the date query or count query
+        :returns: the date query or count query
         """
         if self._is_date_query:
             return self._date_query
@@ -55,7 +55,7 @@ class Query(object):
         A query for retrieving results grouped by the date in date_field (in
         chronological order, where the interval is date_interval).
 
-        :return: a query ready to submit to the backend
+        :returns: a query ready to submit to the backend
         """
         return ''
 
@@ -64,7 +64,7 @@ class Query(object):
         """
         A query for retrieving results grouped by the categories in count_field.
 
-        :return: a query ready to submit to the backend
+        :returns: a query ready to submit to the backend
         """
         return ''
 
@@ -74,7 +74,7 @@ class Query(object):
         Submits the query to the backend and processes the results into the format
         [(key, count)].
 
-        :return: a list of (key,count) tuples
+        :returns: a list of (key,count) tuples
         """
         pass
 
@@ -99,7 +99,7 @@ class ElasticSearchQuery(Query):
 
         :param query_stack: the items to nest, in descending order (i.e. the first item
             will be the outermost key)
-        :return: a dict of nested items
+        :returns: a dict of nested items
         """
         nested = query_stack[-1]
         for i in query_stack[-2::-1]:
@@ -112,7 +112,7 @@ class ElasticSearchQuery(Query):
         Create the subquery for filtering records (mostly from URL parameters, but date
         graphs also require that the date field is not null).
 
-        :return: a dict of filter items
+        :returns: a dict of filter items
         """
         if self._is_date_query:
             filters = [self._nest('exists', 'field', f'data.{self.date_field}')]
