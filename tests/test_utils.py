@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 
 from ckanext.graph.lib.utils import (
     get_datastore_field_types,
-    get_request_query,
     get_request_filters,
+    get_request_query,
 )
 
 
