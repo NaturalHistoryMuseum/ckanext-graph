@@ -187,12 +187,11 @@ class ElasticSearchQuery(Query):
         return query_stack
 
     def run(self):
-        data_dict = {
-            'resource_id': self.resource_id,
-            'search': self.query,
-            'raw_result': True,
-        }
-        results = toolkit.get_action('datastore_search_raw')({}, data_dict)
+        # the vds_multi_direct action is admin only to prevent misuse, but we know what
+        # we're doing, so skip the auth check
+        context = {'ignore_auth': True}
+        data_dict = {'resource_ids': [self.resource_id], 'search': self.query}
+        results = toolkit.get_action('vds_multi_direct')(context, data_dict)
         aggs = results['aggregations']
         extra_nesting = (
             self._is_date_query or len(self.filters) > 0 or self.q is not None
