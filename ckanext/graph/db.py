@@ -148,7 +148,7 @@ class ElasticSearchQuery(Query):
         field_type = utils.get_datastore_field_types()[self.date_field]
 
         if field_type == 'date':
-            histogram_options = {'field': f'data.{self.date_field}'}
+            histogram_options = {'field': f'data.{self.date_field}._d'}
         else:
             script = f"""try {{
               def parser = new SimpleDateFormat(\'yyyy-MM-dd\');
