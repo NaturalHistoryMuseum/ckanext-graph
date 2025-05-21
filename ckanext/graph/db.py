@@ -148,7 +148,7 @@ class ElasticSearchQuery(Query):
         field_type = utils.get_datastore_field_types()[self.date_field]
 
         if field_type == 'date':
-            histogram_options = {'field': f'data.{self.date_field}'}
+            histogram_options = {'field': f'data.{self.date_field}._d'}
         else:
             script = f"""try {{
               def parser = new SimpleDateFormat(\'yyyy-MM-dd\');
@@ -159,7 +159,7 @@ class ElasticSearchQuery(Query):
              }}"""
             histogram_options = {'script': script}
 
-        histogram_options['interval'] = self.date_interval
+        histogram_options['calendar_interval'] = self.date_interval
 
         select_stack = self._nest(
             'aggs', self._bucket_name, 'date_histogram', histogram_options
@@ -187,12 +187,11 @@ class ElasticSearchQuery(Query):
         return query_stack
 
     def run(self):
-        data_dict = {
-            'resource_id': self.resource_id,
-            'search': self.query,
-            'raw_result': True,
-        }
-        results = toolkit.get_action('datastore_search_raw')({}, data_dict)
+        # the vds_multi_direct action is admin only to prevent misuse, but we know what
+        # we're doing, so skip the auth check
+        context = {'ignore_auth': True}
+        data_dict = {'resource_ids': [self.resource_id], 'search': self.query}
+        results = toolkit.get_action('vds_multi_direct')(context, data_dict)
         aggs = results['aggregations']
         extra_nesting = (
             self._is_date_query or len(self.filters) > 0 or self.q is not None

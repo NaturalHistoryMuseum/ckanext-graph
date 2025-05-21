@@ -19,9 +19,7 @@ def get_datastore_field_types():
         'limit': 0,
     }
     results = toolkit.get_action('datastore_search')({}, data)
-    fields = results.get('raw_fields', results.get('fields', {}))
-
-    return {k: v.get('type', 'keyword') for k, v in fields.items()}
+    return {field['id']: field['type'] for field in results.get('fields', [])}
 
 
 def get_request_filters():
