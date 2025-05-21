@@ -159,7 +159,7 @@ class ElasticSearchQuery(Query):
              }}"""
             histogram_options = {'script': script}
 
-        histogram_options['interval'] = self.date_interval
+        histogram_options['calendar_interval'] = self.date_interval
 
         select_stack = self._nest(
             'aggs', self._bucket_name, 'date_histogram', histogram_options
