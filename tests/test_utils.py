@@ -15,11 +15,11 @@ class TestGetDatastoreFieldTypes(object):
     def test_using_fields(self):
         resource_id = MagicMock()
         search_results = {
-            'fields': {
-                'field1': {'type': 'bert'},
-                'field2': {'type': 'flarp'},
-                'field3': {'keyword': 'banana'},
-            }
+            'fields': [
+                {'id': 'field1', 'type': 'string'},
+                {'id': 'field2', 'type': 'number'},
+                {'id': 'field3', 'type': 'boolean'},
+            ]
         }
 
         mock_toolkit = MagicMock(
@@ -31,9 +31,9 @@ class TestGetDatastoreFieldTypes(object):
             field_types = get_datastore_field_types()
 
         assert len(field_types) == 3
-        assert field_types['field1'] == 'bert'
-        assert field_types['field2'] == 'flarp'
-        assert field_types['field3'] == 'keyword'
+        assert field_types['field1'] == 'string'
+        assert field_types['field2'] == 'number'
+        assert field_types['field3'] == 'boolean'
 
     def test_no_fields(self):
         resource_id = MagicMock()
