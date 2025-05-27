@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.1.11 (2025-05-27)
+
+### Fix
+
+- use the correct vds action
+- use the correct date_histogram option for interval
+- use the correct parsed type path
+
+### Refactor
+
+- remove usage of raw_fields
+
+### Tests
+
+- fix tests
+
 ## v2.1.10 (2024-11-04)
 
 ### Docs
