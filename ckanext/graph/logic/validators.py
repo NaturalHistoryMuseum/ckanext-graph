@@ -12,12 +12,12 @@ from ckanext.graph.lib import utils
 
 def is_boolean(value, context):
     """
-    Validate a field as a boolean. Assuming missing value means false.
+    Validate a field as a boolean.
 
+    Assuming missing value means false.
     :param value:
     :param context:
     """
-
     if isinstance(value, bool):
         return value
     elif isinstance(value, str) and value.lower() in ['true', 'yes', 't', 'y', '1']:
@@ -56,7 +56,6 @@ def is_date_castable(value, context):
     :param value:
     :param context:
     """
-
     if value:
         fields = utils.get_datastore_field_types()
 
