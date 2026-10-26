@@ -98,7 +98,6 @@ class GraphPlugin(SingletonPlugin):
         :param context:
         :param data_dict:
         """
-
         datastore_fields = utils.get_datastore_field_types()
         self.datastore_field_names = datastore_fields.keys()
 

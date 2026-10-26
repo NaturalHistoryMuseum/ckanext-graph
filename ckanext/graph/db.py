@@ -20,8 +20,9 @@ class Query(object):
 
     def __init__(self, date_field=None, date_interval=None, count_field=None):
         """
-        Construct a new Query object. Use EITHER date args OR count args. Using both
-        will fail.
+        Construct a new Query object.
+
+        Use EITHER date args OR count args. Using both will fail.
 
         :param date_field: the name of the field to use for dates
         :param date_interval: the length of time between date groupings, e.g. day, month
